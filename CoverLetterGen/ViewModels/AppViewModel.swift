@@ -70,20 +70,21 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let content = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
-            generatedContent = content
+            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
+            let cleanedContent = cleanArtifacts(from: rawContent)
+            generatedContent = cleanedContent
             
             // Save to History
             if let existing = selectedLetter {
                 existing.resumeText = resumeInput
                 existing.jobDescription = jobInput
-                existing.generatedContent = content
+                existing.generatedContent = cleanedContent
                 existing.createdAt = Date() // touch
             } else {
                 let newLetter = CoverLetter(
                     resumeText: resumeInput,
                     jobDescription: jobInput,
-                    generatedContent: content,
+                    generatedContent: cleanedContent,
                     title: "Letter for Position" // Could extract company name later
                 )
                 context.insert(newLetter)

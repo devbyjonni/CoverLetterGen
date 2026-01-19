@@ -49,7 +49,9 @@ actor OpenAIService {
         - Return ONLY the cover letter content.
         - Do NOT include any conversational preamble like "Certainly!" or "Here is the letter".
         - Do NOT wrap the output in markdown code blocks (no ```).
-        - Use standard Markdown formatting for the letter itself (bolding, paragraphs).
+        - Do NOT use Markdown headers (lines starting with #). Use **Bold** or CAPS for section titles.
+        - Do NOT use horizontal rules (---).
+        - Use standard paragraph spacing.
         """
         
         let payload = ChatCompletionRequest(
