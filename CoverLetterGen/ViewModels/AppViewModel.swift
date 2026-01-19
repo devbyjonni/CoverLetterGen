@@ -101,4 +101,27 @@ class AppViewModel {
         
         isGenerating = false
     }
+    
+    private func cleanArtifacts(from text: String) -> String {
+        var clean = text
+        // Remove markdown code fences if any remain
+        clean = clean.replacingOccurrences(of: "```markdown", with: "")
+        clean = clean.replacingOccurrences(of: "```", with: "")
+        
+        // Remove horizontal rules
+        clean = clean.replacingOccurrences(of: "---", with: "")
+        
+        // Remove headers but keep text (simple heuristic: remove leading # and space)
+        let lines = clean.components(separatedBy: .newlines)
+        let processedLines = lines.map { line -> String in
+            var l = line.trimmingCharacters(in: .whitespaces)
+            while l.hasPrefix("#") {
+                l.removeFirst()
+                l = l.trimmingCharacters(in: .whitespaces)
+            }
+            return l
+        }
+        
+        return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
