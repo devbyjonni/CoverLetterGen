@@ -2,10 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct InputView: View {
-    @EnvironmentObject var viewModel: AppViewModel
+    @Environment(AppViewModel.self) var viewModel
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {

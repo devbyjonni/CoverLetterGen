@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ResultView: View {
-    @EnvironmentObject var viewModel: AppViewModel
+    @Environment(AppViewModel.self) var viewModel
 
     var body: some View {
         VStack(spacing: 0) {

@@ -3,12 +3,13 @@ import SwiftData
 
 struct SidebarView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var viewModel: AppViewModel
+    @Environment(AppViewModel.self) var viewModel
     @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingDeleteAlert = false
     @State private var letterToDelete: CoverLetter?
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         List(selection: $viewModel.selectedLetter) {
             Section {
                 Button(action: {

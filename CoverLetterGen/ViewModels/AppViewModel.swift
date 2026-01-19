@@ -1,14 +1,16 @@
 import SwiftUI
 import SwiftData
+import Observation
 
 @MainActor
-class AppViewModel: ObservableObject {
-    @Published var selectedLetter: CoverLetter?
-    @Published var resumeInput: String = ""
-    @Published var jobInput: String = ""
-    @Published var isGenerating: Bool = false
-    @Published var generatedContent: String = ""
-    @Published var errorMessage: String?
+@Observable
+class AppViewModel {
+    var selectedLetter: CoverLetter?
+    var resumeInput: String = ""
+    var jobInput: String = ""
+    var isGenerating: Bool = false
+    var generatedContent: String = ""
+    var errorMessage: String?
     
     // TODO: Replace with secure storage or user input in settings
     private let openAIService = OpenAIService(apiKey: "YOUR_API_KEY_HERE")
