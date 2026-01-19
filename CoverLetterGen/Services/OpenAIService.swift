@@ -45,13 +45,17 @@ actor OpenAIService {
         JOB DESCRIPTION:
         \(jobDescription)
         
-        The cover letter should be professional, concise, and tailored to the job. Use Markdown formatting.
+        STRICT OUTPUT RULES:
+        - Return ONLY the cover letter content.
+        - Do NOT include any conversational preamble like "Certainly!" or "Here is the letter".
+        - Do NOT wrap the output in markdown code blocks (no ```).
+        - Use standard Markdown formatting for the letter itself (bolding, paragraphs).
         """
         
         let payload = ChatCompletionRequest(
             model: "gpt-4o",
             messages: [
-                .init(role: "system", content: "You are a helpful assistant that writes cover letters."),
+                .init(role: "system", content: "You are a helpful assistant that writes cover letters. You strictly output only the letter content with no filler."),
                 .init(role: "user", content: prompt)
             ]
         )
