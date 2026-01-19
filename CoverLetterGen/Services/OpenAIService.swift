@@ -47,6 +47,8 @@ actor OpenAIService {
         
         STRICT OUTPUT RULES:
         - Return ONLY the cover letter content.
+        - Do NOT include the sender's contact information (Name, Address, Phone, Email) at the top. I will add this automatically.
+        - Start directly with the Date or the Recipient's details (e.g., [Recipient Name]).
         - Do NOT include any conversational preamble like "Certainly!" or "Here is the letter".
         - Do NOT wrap the output in markdown code blocks (no ```).
         - Do NOT use Markdown headers (lines starting with #). Use **Bold** or CAPS for section titles.
