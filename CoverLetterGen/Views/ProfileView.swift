@@ -13,7 +13,15 @@ struct ProfileView: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
 
-                Section(header: Text("Personal Info")) {
+                Section(header: HStack {
+                    Text("Personal Info")
+                    Spacer()
+                    Button("Fill Test Data") {
+                        viewModel.fillTestProfile()
+                    }
+                    .font(.caption)
+                    .textCase(nil)
+                }) {
                     TextField("Full Name", text: $viewModel.userFullName)
                         .textContentType(.name)
                     TextField("Job Title", text: $viewModel.userJobTitle)
@@ -49,11 +57,6 @@ struct ProfileView: View {
             .navigationTitle("Your Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fill Test User") {
-                        viewModel.fillTestProfile()
-                    }
-                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         dismiss()
