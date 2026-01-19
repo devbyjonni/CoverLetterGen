@@ -75,7 +75,7 @@ struct EmptyStateView: View {
                     .fill(Color(uiColor: .secondarySystemFill))
                     .frame(width: 80, height: 80)
                 Image(systemName: "wand.and.stars")
-                    .font(.system(size: 32))
+                    .font(.largeTitle)
                     .foregroundStyle(.secondary)
             }
             
