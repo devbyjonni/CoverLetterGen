@@ -6,6 +6,7 @@ struct SidebarView: View {
     @Environment(AppViewModel.self) var viewModel
     @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingDeleteAlert = false
+    @State private var showingSettings = false
     @State private var letterToDelete: CoverLetter?
 
     var body: some View {
@@ -58,6 +59,16 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .navigationTitle("CoverLetterGen")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: { showingSettings = true }) {
+                    Label("Settings", systemImage: "gear")
+                }
+            }
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
         .alert("Delete Letter?", isPresented: $showingDeleteAlert, presenting: letterToDelete) { letter in
             Button("Delete", role: .destructive) {
                 modelContext.delete(letter)

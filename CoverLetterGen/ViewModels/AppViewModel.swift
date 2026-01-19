@@ -12,8 +12,11 @@ class AppViewModel {
     var generatedContent: String = ""
     var errorMessage: String?
     
-    // TODO: Replace with secure storage or user input in settings
-    private let openAIService = OpenAIService(apiKey: "YOUR_API_KEY_HERE")
+    private var openAIService: OpenAIService? {
+        let key = UserDefaults.standard.string(forKey: "OpenAI_API_Key") ?? ""
+        guard !key.isEmpty else { return nil }
+        return OpenAIService(apiKey: key)
+    }
     
     func createNewLetter() {
         selectedLetter = nil
@@ -47,6 +50,11 @@ class AppViewModel {
     }
     
     func generateLetter(context: ModelContext) async {
+        guard let service = openAIService else {
+            errorMessage = "Please configure your OpenAI API Key in Settings."
+            return
+        }
+        
         guard !resumeInput.isEmpty, !jobInput.isEmpty else {
             errorMessage = "Please enter both resume and job description."
             return
@@ -56,7 +64,7 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let content = try await openAIService.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
+            let content = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
             generatedContent = content
             
             // Save to History
@@ -73,9 +81,11 @@ class AppViewModel {
                     title: "Letter for Position" // Could extract company name later
                 )
                 context.insert(newLetter)
+                
+                // Select and save
                 selectedLetter = newLetter
             }
-            
+            // Explicit save is often auto-handled by SwiftData Autosave, but explicit is safe
             try context.save()
             
         } catch {
