@@ -16,10 +16,13 @@ struct ProfileView: View {
                 Section(header: HStack {
                     Text("Personal Info")
                     Spacer()
-                    Button("Fill Test Data") {
-                        viewModel.fillTestProfile()
+                    Button(action: { viewModel.fillTestProfile() }) {
+                        Label("Fill Test Data", systemImage: "wand.and.stars")
+                            .font(.caption)
+                            .fontWeight(.medium)
                     }
-                    .font(.caption)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.blue)
                     .textCase(nil)
                 }) {
                     TextField("Full Name", text: $viewModel.userFullName)
