@@ -7,6 +7,12 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Text("Your personal details are stored securely on this device. They are sent to OpenAI only when you request to generate a new cover letter.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+
                 Section(header: Text("Personal Info")) {
                     TextField("Full Name", text: $viewModel.userFullName)
                         .textContentType(.name)
@@ -29,16 +35,6 @@ struct ProfileView: View {
                         .textContentType(.addressState)
                     TextField("Zip/Postal Code", text: $viewModel.userZip)
                         .textContentType(.postalCode)
-                }
-                
-                Section {
-                    EmptyView()
-                } footer: {
-                    Text("Your personal details are stored securely on this device. They are sent to OpenAI only when you request to generate a new cover letter.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 8)
                 }
             }
             .navigationTitle("Your Profile")
