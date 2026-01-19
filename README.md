@@ -1,4 +1,5 @@
 # CoverLetterGen
+![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
 ![App Screenshot](screenshots/Screenshot.png)
 
 An AI-powered iPad application that generates tailored cover letters using SwiftUI and SwiftData.
