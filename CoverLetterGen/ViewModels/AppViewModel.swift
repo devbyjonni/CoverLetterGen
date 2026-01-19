@@ -5,7 +5,19 @@ import Observation
 @MainActor
 @Observable
 class AppViewModel {
-    var selectedLetter: CoverLetter?
+    var selectedLetter: CoverLetter? {
+        didSet {
+            if let letter = selectedLetter {
+                resumeInput = letter.resumeText
+                jobInput = letter.jobDescription
+                generatedContent = letter.generatedContent
+            } else {
+                resumeInput = ""
+                jobInput = ""
+                generatedContent = ""
+            }
+        }
+    }
     var resumeInput: String = ""
     var jobInput: String = ""
     var isGenerating: Bool = false
@@ -20,16 +32,10 @@ class AppViewModel {
     
     func createNewLetter() {
         selectedLetter = nil
-        resumeInput = ""
-        jobInput = ""
-        generatedContent = ""
     }
     
     func selectLetter(_ letter: CoverLetter) {
         selectedLetter = letter
-        resumeInput = letter.resumeText
-        jobInput = letter.jobDescription
-        generatedContent = letter.generatedContent
     }
     
     func fillTestData() {
