@@ -1,5 +1,5 @@
 # CoverLetterGen
-![App Screenshot](Screenshot.png)
+![App Screenshot](screenshots/Screenshot.png)
 
 An AI-powered iPad application that generates tailored cover letters using SwiftUI and SwiftData.
 
