@@ -32,7 +32,7 @@ struct InputView: View {
                                     .fontWeight(.medium)
                             }
                             .buttonStyle(.plain)
-                            .foregroundStyle(Color.primaryBlue)
+                            .foregroundStyle(.blue)
                         }
 
                         TextEditor(text: $viewModel.resumeInput)
@@ -40,11 +40,11 @@ struct InputView: View {
                             .frame(minHeight: 200)
                             .scrollContentBackground(.hidden)
                             .padding()
-                            .background(Color("CardBackground"))
+                            .background(Color(uiColor: .secondarySystemGroupedBackground))
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.slate200, lineWidth: 1)
+                                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                             )
                     }
 
@@ -62,11 +62,11 @@ struct InputView: View {
                             .frame(minHeight: 150)
                             .scrollContentBackground(.hidden)
                             .padding()
-                            .background(Color("CardBackground"))
+                            .background(Color(uiColor: .secondarySystemGroupedBackground))
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.slate200, lineWidth: 1)
+                                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
                             )
                     }
                 }
@@ -93,16 +93,16 @@ struct InputView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.primaryBlue)
+                    .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(12)
-                    .shadow(color: Color.primaryBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                 }
                 .disabled(viewModel.isGenerating)
                 .padding(24)
             }
-            .background(Color("CardBackground"))
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
         }
-        .background(Color("MainBackground"))
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 }

@@ -14,7 +14,7 @@ struct ResultView: View {
                             Text("Generated Letter")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.primaryBlue)
+                                .foregroundStyle(.primary)
                             Spacer()
                         }
                         
@@ -22,11 +22,11 @@ struct ResultView: View {
                             .font(.body)
                             .textSelection(.enabled)
                             .padding(24)
-                            .background(Color("CardBackground"))
+                            .background(Color(uiColor: .secondarySystemGroupedBackground))
                             .cornerRadius(16)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.slate200.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [5]))
+                                    .stroke(Color.secondary.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
                             )
                     }
                     .padding(24)
@@ -42,7 +42,7 @@ struct ResultView: View {
                             Label("Copy", systemImage: "doc.on.doc")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.slate100)
+                                .background(Color(uiColor: .tertiarySystemFill))
                                 .foregroundColor(.primary)
                                 .cornerRadius(12)
                         }
@@ -53,17 +53,17 @@ struct ResultView: View {
                             Label("Download PDF", systemImage: "arrow.down.doc")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.slate100)
+                                .background(Color(uiColor: .tertiarySystemFill))
                                 .foregroundColor(.primary)
                                 .cornerRadius(12)
                         }
                     }
                     .padding(24)
                 }
-                .background(Color("CardBackground"))
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
             }
         }
-        .background(Color.white) // Right panel usually white in the design
+        .background(Color(uiColor: .systemGroupedBackground)) // Right panel usually white in the design
     }
 }
 
@@ -72,20 +72,20 @@ struct EmptyStateView: View {
         VStack(spacing: 24) {
             ZStack {
                 Circle()
-                    .fill(Color.slate100)
+                    .fill(Color(uiColor: .secondarySystemFill))
                     .frame(width: 80, height: 80)
                 Image(systemName: "wand.and.stars")
                     .font(.system(size: 32))
-                    .foregroundStyle(Color.slate400)
+                    .foregroundStyle(.secondary)
             }
             
             Text("Your AI-crafted cover letter will appear here after you click generate.")
                 .font(.body)
-                .foregroundStyle(Color.slate500)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 250)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("MainBackground").opacity(0.5))
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 }
