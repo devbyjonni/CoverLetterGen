@@ -30,6 +30,16 @@ struct ProfileView: View {
                     TextField("Zip/Postal Code", text: $viewModel.userZip)
                         .textContentType(.postalCode)
                 }
+                
+                Section {
+                    EmptyView()
+                } footer: {
+                    Text("Your personal details are stored securely on this device. They are sent to OpenAI only when you request to generate a new cover letter.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
+                }
             }
             .navigationTitle("Your Profile")
             .navigationBarTitleDisplayMode(.inline)

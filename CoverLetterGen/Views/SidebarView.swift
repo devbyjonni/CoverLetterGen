@@ -61,11 +61,12 @@ struct SidebarView: View {
         .listStyle(.sidebar)
         .navigationTitle("CoverLetterGen")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .bottomBar) {
                 HStack {
                     Button(action: { showingProfile = true }) {
                         Label("Profile", systemImage: "person.crop.circle")
                     }
+                    Spacer()
                     Button(action: { showingSettings = true }) {
                         Label("Settings", systemImage: "gear")
                     }
