@@ -21,7 +21,7 @@ An AI-powered iPad application that generates tailored cover letters using Swift
 ## Setup
 1. Clone the repository.
 2. Open `CoverLetterGen.xcodeproj` (or the folder in Swift Playgrounds).
-3. Run on iPad Simulator or Device.
+3. Run on iPad Simulator or Device, then navigate to App Settings.
 4. Tap the **Settings** (gear icon) in the sidebar to enter your OpenAI API Key.
 
 ## Requirements
