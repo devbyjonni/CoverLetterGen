@@ -30,17 +30,14 @@ actor OpenAIService {
         }
     }
     
-    func generateCoverLetter(resume: String, jobDescription: String, senderDetails: String) async throws -> String {
+    func generateCoverLetter(resume: String, jobDescription: String) async throws -> String {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let prompt = """
-        You are a professional career coach. Write a compelling cover letter based on the following information.
-        
-        SENDER DETAILS:
-        \(senderDetails)
+        You are a professional career coach. Write a compelling cover letter based on the following resume and job description.
         
         RESUME:
         \(resume)

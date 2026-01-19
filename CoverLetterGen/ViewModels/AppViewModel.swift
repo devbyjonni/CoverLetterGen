@@ -28,6 +28,7 @@ class AppViewModel {
     var userCity: String = UserDefaults.standard.string(forKey: "userCity") ?? "" { didSet { UserDefaults.standard.set(userCity, forKey: "userCity") } }
     var userState: String = UserDefaults.standard.string(forKey: "userState") ?? "" { didSet { UserDefaults.standard.set(userState, forKey: "userState") } }
     var userZip: String = UserDefaults.standard.string(forKey: "userZip") ?? "" { didSet { UserDefaults.standard.set(userZip, forKey: "userZip") } }
+    var userPortfolio: String = UserDefaults.standard.string(forKey: "userPortfolio") ?? "" { didSet { UserDefaults.standard.set(userPortfolio, forKey: "userPortfolio") } }
 
     var resumeInput: String = ""
     var jobInput: String = ""
@@ -81,21 +82,29 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, senderDetails: senderDetails)
+        do {
+            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
             let cleanedContent = cleanArtifacts(from: rawContent)
-            generatedContent = cleanedContent
+            
+            // Prepend User Profile Data locally (Privacy)
+            let header = senderDetails
+            if !header.isEmpty {
+                generatedContent = header + "\n\n" + cleanedContent
+            } else {
+                generatedContent = cleanedContent
+            }
             
             // Save to History
             if let existing = selectedLetter {
                 existing.resumeText = resumeInput
                 existing.jobDescription = jobInput
-                existing.generatedContent = cleanedContent
+                existing.generatedContent = generatedContent
                 existing.createdAt = Date() // touch
             } else {
                 let newLetter = CoverLetter(
                     resumeText: resumeInput,
                     jobDescription: jobInput,
-                    generatedContent: cleanedContent,
+                    generatedContent: generatedContent,
                     title: "Letter for Position" // Could extract company name later
                 )
                 context.insert(newLetter)
@@ -113,7 +122,7 @@ class AppViewModel {
         isGenerating = false
     }
     
-    private func cleanArtifacts(from text: String) -> String {
+     func cleanArtifacts(from text: String) -> String {
         let lines = text.components(separatedBy: .newlines)
         let processedLines = lines.compactMap { line -> String? in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -143,6 +152,7 @@ class AppViewModel {
         var contact = [String]()
         if !userEmail.isEmpty { contact.append(userEmail) }
         if !userPhone.isEmpty { contact.append(userPhone) }
+        if !userPortfolio.isEmpty { contact.append(userPortfolio) }
         if !contact.isEmpty { details.append(contact.joined(separator: " | ")) }
         
         var address = [String]()

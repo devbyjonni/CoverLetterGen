@@ -7,7 +7,7 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Text("Your personal details are stored securely on this device. They are sent to OpenAI only when you request to generate a new cover letter.")
+                Text("Your personal details are stored privately on this device. They are NEVER sent to OpenAI. The app simply adds them to the top of your letter after it is generated.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.clear)
@@ -21,9 +21,16 @@ struct ProfileView: View {
                     TextField("Email", text: $viewModel.userEmail)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                     TextField("Phone", text: $viewModel.userPhone)
                         .textContentType(.telephoneNumber)
                         .keyboardType(.phonePad)
+                    TextField("Git / Portfolio URL", text: $viewModel.userPortfolio)
+                        .textContentType(.URL)
+                        .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                 }
 
                 Section(header: Text("Address")) {
