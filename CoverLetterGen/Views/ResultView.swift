@@ -26,8 +26,7 @@ struct ResultView: View {
                             .cornerRadius(16)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.slate200.opacity(0.5), lineWidth: 1)
-                                    .dash([5])
+                                    .stroke(Color.slate200.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [5]))
                             )
                     }
                     .padding(24)
