@@ -28,6 +28,7 @@ class AppViewModel {
     var userCity: String = UserDefaults.standard.string(forKey: "userCity") ?? "" { didSet { UserDefaults.standard.set(userCity, forKey: "userCity") } }
     var userState: String = UserDefaults.standard.string(forKey: "userState") ?? "" { didSet { UserDefaults.standard.set(userState, forKey: "userState") } }
     var userZip: String = UserDefaults.standard.string(forKey: "userZip") ?? "" { didSet { UserDefaults.standard.set(userZip, forKey: "userZip") } }
+    var userCountry: String = UserDefaults.standard.string(forKey: "userCountry") ?? "" { didSet { UserDefaults.standard.set(userCountry, forKey: "userCountry") } }
     var userPortfolio: String = UserDefaults.standard.string(forKey: "userPortfolio") ?? "" { didSet { UserDefaults.standard.set(userPortfolio, forKey: "userPortfolio") } }
 
     var resumeInput: String = ""
@@ -65,6 +66,19 @@ class AppViewModel {
         We are looking for a Senior Software Engineer to join our cloud infra team.
         Must have experience with AWS and leading teams.
         """
+    }
+    
+    func fillTestProfile() {
+        userFullName = "John Doe"
+        userJobTitle = "Senior Software Engineer"
+        userEmail = "john.doe@example.com"
+        userPhone = "555-0100"
+        userAddress = "123 Tech Lane"
+        userCity = "San Francisco"
+        userState = "CA"
+        userZip = "94105"
+        userCountry = "USA"
+        userPortfolio = "github.com/johndoe"
     }
     
     func generateLetter(context: ModelContext) async {
@@ -160,6 +174,7 @@ class AppViewModel {
         if !userCity.isEmpty { cityStateZip.append(userCity) }
         if !userState.isEmpty { cityStateZip.append(userState) }
         if !userZip.isEmpty { cityStateZip.append(userZip) }
+        if !userCountry.isEmpty { cityStateZip.append(userCountry) }
         if !cityStateZip.isEmpty { address.append(cityStateZip.joined(separator: ", ")) }
         if !address.isEmpty { details.append(address.joined(separator: "\n")) }
         

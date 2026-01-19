@@ -42,11 +42,18 @@ struct ProfileView: View {
                         .textContentType(.addressState)
                     TextField("Zip/Postal Code", text: $viewModel.userZip)
                         .textContentType(.postalCode)
+                    TextField("Country", text: $viewModel.userCountry)
+                        .textContentType(.countryName)
                 }
             }
             .navigationTitle("Your Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Fill Test User") {
+                        viewModel.fillTestProfile()
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         dismiss()
