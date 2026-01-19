@@ -82,7 +82,6 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-        do {
             let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
             let cleanedContent = cleanArtifacts(from: rawContent)
             
