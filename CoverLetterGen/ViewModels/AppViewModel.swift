@@ -18,6 +18,17 @@ class AppViewModel {
             }
         }
     }
+    
+    // User Profile Data
+    var userFullName: String = UserDefaults.standard.string(forKey: "userFullName") ?? "" { didSet { UserDefaults.standard.set(userFullName, forKey: "userFullName") } }
+    var userJobTitle: String = UserDefaults.standard.string(forKey: "userJobTitle") ?? "" { didSet { UserDefaults.standard.set(userJobTitle, forKey: "userJobTitle") } }
+    var userEmail: String = UserDefaults.standard.string(forKey: "userEmail") ?? "" { didSet { UserDefaults.standard.set(userEmail, forKey: "userEmail") } }
+    var userPhone: String = UserDefaults.standard.string(forKey: "userPhone") ?? "" { didSet { UserDefaults.standard.set(userPhone, forKey: "userPhone") } }
+    var userAddress: String = UserDefaults.standard.string(forKey: "userAddress") ?? "" { didSet { UserDefaults.standard.set(userAddress, forKey: "userAddress") } }
+    var userCity: String = UserDefaults.standard.string(forKey: "userCity") ?? "" { didSet { UserDefaults.standard.set(userCity, forKey: "userCity") } }
+    var userState: String = UserDefaults.standard.string(forKey: "userState") ?? "" { didSet { UserDefaults.standard.set(userState, forKey: "userState") } }
+    var userZip: String = UserDefaults.standard.string(forKey: "userZip") ?? "" { didSet { UserDefaults.standard.set(userZip, forKey: "userZip") } }
+
     var resumeInput: String = ""
     var jobInput: String = ""
     var isGenerating: Bool = false
@@ -70,7 +81,7 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
+            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, senderDetails: senderDetails)
             let cleanedContent = cleanArtifacts(from: rawContent)
             generatedContent = cleanedContent
             
@@ -122,5 +133,27 @@ class AppViewModel {
         }
         
         return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    var senderDetails: String {
+        var details = [String]()
+        if !userFullName.isEmpty { details.append(userFullName) }
+        if !userJobTitle.isEmpty { details.append(userJobTitle) }
+        
+        var contact = [String]()
+        if !userEmail.isEmpty { contact.append(userEmail) }
+        if !userPhone.isEmpty { contact.append(userPhone) }
+        if !contact.isEmpty { details.append(contact.joined(separator: " | ")) }
+        
+        var address = [String]()
+        if !userAddress.isEmpty { address.append(userAddress) }
+        var cityStateZip = [String]()
+        if !userCity.isEmpty { cityStateZip.append(userCity) }
+        if !userState.isEmpty { cityStateZip.append(userState) }
+        if !userZip.isEmpty { cityStateZip.append(userZip) }
+        if !cityStateZip.isEmpty { address.append(cityStateZip.joined(separator: ", ")) }
+        if !address.isEmpty { details.append(address.joined(separator: "\n")) }
+        
+        return details.joined(separator: "\n")
     }
 }
