@@ -47,10 +47,8 @@ struct ResultView: View {
                                 .cornerRadius(12)
                         }
                         
-                        Button(action: {
-                            // Placeholder for PDF export
-                        }) {
-                            Label("Download PDF", systemImage: "arrow.down.doc")
+                        ShareLink(item: viewModel.generatedContent) {
+                            Label("Share", systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .background(Color(uiColor: .tertiarySystemFill))
