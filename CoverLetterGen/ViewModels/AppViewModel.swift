@@ -103,23 +103,22 @@ class AppViewModel {
     }
     
     private func cleanArtifacts(from text: String) -> String {
-        var clean = text
-        // Remove markdown code fences if any remain
-        clean = clean.replacingOccurrences(of: "```markdown", with: "")
-        clean = clean.replacingOccurrences(of: "```", with: "")
-        
-        // Remove horizontal rules
-        clean = clean.replacingOccurrences(of: "---", with: "")
-        
-        // Remove headers but keep text (simple heuristic: remove leading # and space)
-        let lines = clean.components(separatedBy: .newlines)
-        let processedLines = lines.map { line -> String in
-            var l = line.trimmingCharacters(in: .whitespaces)
-            while l.hasPrefix("#") {
-                l.removeFirst()
-                l = l.trimmingCharacters(in: .whitespaces)
+        let lines = text.components(separatedBy: .newlines)
+        let processedLines = lines.compactMap { line -> String? in
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            
+            // Remove code fences (beginning or end)
+            if trimmed.hasPrefix("```") { return nil }
+            
+            // Remove horizontal rules
+            if trimmed.hasPrefix("---") { return nil }
+            
+            // Remove headers but keep text (remove leading # and space)
+            if trimmed.hasPrefix("#") {
+                return trimmed.drop(while: { $0 == "#" }).trimmingCharacters(in: .whitespaces)
             }
-            return l
+            
+            return line // Keep original line if no artifacts
         }
         
         return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
