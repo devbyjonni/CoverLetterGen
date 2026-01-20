@@ -1,0 +1,114 @@
+import XCTest
+@testable import CoverLetterGen
+
+final class OpenAIServiceTests: XCTestCase {
+    
+    var service: OpenAIService!
+    
+    override func setUp() {
+        super.setUp()
+        service = OpenAIService(apiKey: "test-key")
+    }
+    
+    override func tearDown() {
+        service = nil
+        super.tearDown()
+    }
+    
+    /// Tests that the generated prompt string contains the user's specific instructions for Length and Tone, as well as the input data.
+    func testGeneratePrompt_ContainsInstructions() {
+        // Given
+        let resume = "My Resume"
+        let job = "My Job"
+        let length = "Keep it short. Do not exceed 300 words."
+        let tone = "Be professional"
+        
+        // When
+        let prompt = service.generatePrompt(resume: resume, jobDescription: job, lengthInstruction: length, toneInstruction: tone)
+        
+        // Then
+        XCTAssertTrue(prompt.contains("Length: Keep it short. Do not exceed 300 words."), "Prompt should contain length instruction")
+        XCTAssertTrue(prompt.contains("Tone: Be professional"), "Prompt should contain tone instruction")
+        XCTAssertTrue(prompt.contains("RESUME:\nMy Resume"), "Prompt should contain the resume")
+        XCTAssertTrue(prompt.contains("JOB DESCRIPTION:\nMy Job"), "Prompt should contain the job description")
+    }
+    
+    /// Tests that changing the input parameters results in the prompt reflecting those changes correctly.
+    func testGeneratePrompt_DifferentInputs() {
+        // Given
+        let resume = "Experience: Swift"
+        let job = "iOS Dev"
+        let length = "Long (Full Page). Do not exceed 750 words."
+        let tone = "Conversational"
+        
+        // When
+        let prompt = service.generatePrompt(resume: resume, jobDescription: job, lengthInstruction: length, toneInstruction: tone)
+        
+        // Then
+        XCTAssertTrue(prompt.contains("Length: Long (Full Page). Do not exceed 750 words."))
+        XCTAssertTrue(prompt.contains("Tone: Conversational"))
+    }
+    
+    // MARK: - Network Tests
+    
+    /// Tests that the service correctly parses a successful JSON response from the API and extracts the content.
+    func testGenerateCoverLetter_Success() async throws {
+        // Given
+        let expectedContent = "This is a generated cover letter."
+        let jsonString = """
+        {
+            "output": [
+                {
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": "\(expectedContent)"
+                        }
+                    ]
+                }
+            ]
+        }
+        """
+        let mockData = jsonString.data(using: .utf8)!
+        
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, mockData)
+        }
+        
+        // Inject Mock Session
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let mockSession = URLSession(configuration: configuration)
+        service = OpenAIService(apiKey: "test-key", urlSession: mockSession)
+        
+        // When
+        let content = try await service.generateCoverLetter(resume: "R", jobDescription: "J", lengthInstruction: "S", toneInstruction: "P")
+        
+        // Then
+        XCTAssertEqual(content, expectedContent)
+    }
+    
+    /// Tests that the service throws an error when the API returns a server error (e.g., 500), ensuring robust error handling.
+    func testGenerateCoverLetter_ServerError() async {
+        // Given
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
+            return (response, Data())
+        }
+        
+        // Inject Mock Session
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let mockSession = URLSession(configuration: configuration)
+        service = OpenAIService(apiKey: "test-key", urlSession: mockSession)
+        
+        // When/Then
+        do {
+            _ = try await service.generateCoverLetter(resume: "R", jobDescription: "J", lengthInstruction: "S", toneInstruction: "P")
+            XCTFail("Should have thrown error")
+        } catch {
+            // Success (caught error)
+        }
+    }
+}

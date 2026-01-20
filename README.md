@@ -6,10 +6,10 @@ An AI-powered iPad application that generates tailored cover letters using Swift
 
 ## Features
 - **Privacy-First**: Your personal profile data (Name, Contact, Address) is stored **locally** and never sent to OpenAI. It is added to the letter on-device.
-- **Smart Generation**: Uses OpenAI's **GPT-4o** to write professional, artifact-free cover letters.
-- **Comprehensive Profile**: Support for Portfolio URLs, Country, and detailed contact info.
-- **Easy Sharing**: precise text sharing to let you continue editing on any device.
-- **Local History**: Auto-saves all generated letters to SwiftData.
+- **Advanced AI**: Powered by OpenAI's **GPT-5.2 Responses API** for strict adherence to length and tone instructions.
+- **Smart Persistence**: Auto-saves every letter to **SwiftData**, including the exact **Length** and **Tone** settings used to generate it.
+- **Instant Restore**: Selecting a letter from history instantly restores your global app settings to match that letter.
+- **Refined UI**: Clear visual feedback on generation settings (e.g., "Short • Professional") and a clean, artifact-free reading experience.
 - **iPad Optimized**: 3-column layout for maximum productivity.
 
 ## Tech Stack

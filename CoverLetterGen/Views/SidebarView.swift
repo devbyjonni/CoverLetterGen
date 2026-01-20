@@ -40,9 +40,14 @@ struct SidebarView: View {
                                 Text(letter.title)
                                     .font(.body)
                                     .lineLimit(1)
-                                Text(letter.createdAt.formatted(date: .abbreviated, time: .shortened))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                HStack(spacing: 4) {
+                                    Text("\(TextLengthOption(rawValue: letter.lengthOption)?.displayName ?? "Medium") • \(TextToneOption(rawValue: letter.toneOption)?.displayName ?? "Professional")")
+                                        .fontWeight(.medium)
+                                    Text("—")
+                                    Text(letter.createdAt.formatted(date: .abbreviated, time: .shortened))
+                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             }
                             .padding(.vertical, 4)
                         }

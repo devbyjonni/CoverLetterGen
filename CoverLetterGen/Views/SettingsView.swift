@@ -2,9 +2,11 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppViewModel.self) var viewModel
     @AppStorage("OpenAI_API_Key") private var apiKey: String = ""
     
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             Form {
                 Section(header: Text("OpenAI Configuration"), footer: Text("Your API key is stored locally on this device.")) {
@@ -12,6 +14,19 @@ struct SettingsView: View {
                         .textContentType(.password)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+                }
+                
+                Section(header: Text("AI Preferences")) {
+                    Picker("Length", selection: $viewModel.length) {
+                        ForEach(TextLengthOption.allCases) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
+                    Picker("Tone", selection: $viewModel.tone) {
+                        ForEach(TextToneOption.allCases) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
                 }
             }
             .navigationTitle("Settings")

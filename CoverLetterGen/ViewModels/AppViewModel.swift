@@ -11,6 +11,10 @@ class AppViewModel {
                 resumeInput = letter.resumeText
                 jobInput = letter.jobDescription
                 generatedContent = letter.generatedContent
+                
+                // Restore Settings
+                if let l = TextLengthOption(rawValue: letter.lengthOption) { length = l }
+                if let t = TextToneOption(rawValue: letter.toneOption) { tone = t }
             } else {
                 resumeInput = ""
                 jobInput = ""
@@ -30,12 +34,24 @@ class AppViewModel {
     var userZip: String = UserDefaults.standard.string(forKey: "userZip") ?? "" { didSet { UserDefaults.standard.set(userZip, forKey: "userZip") } }
     var userCountry: String = UserDefaults.standard.string(forKey: "userCountry") ?? "" { didSet { UserDefaults.standard.set(userCountry, forKey: "userCountry") } }
     var userPortfolio: String = UserDefaults.standard.string(forKey: "userPortfolio") ?? "" { didSet { UserDefaults.standard.set(userPortfolio, forKey: "userPortfolio") } }
+    // AI Preferences (Typed)
+    var length: TextLengthOption = TextLengthOption(rawValue: UserDefaults.standard.string(forKey: "TextLength") ?? "") ?? .medium {
+        didSet { UserDefaults.standard.set(length.rawValue, forKey: "TextLength") }
+    }
+    
+    var tone: TextToneOption = TextToneOption(rawValue: UserDefaults.standard.string(forKey: "TextTone") ?? "") ?? .professional {
+        didSet { UserDefaults.standard.set(tone.rawValue, forKey: "TextTone") }
+    }
 
     var resumeInput: String = ""
     var jobInput: String = ""
     var isGenerating: Bool = false
     var generatedContent: String = ""
     var errorMessage: String?
+    
+    var characterCountFormatted: String {
+        generatedContent.count.formatted()
+    }
     
     private var openAIService: OpenAIService? {
         let key = UserDefaults.standard.string(forKey: "OpenAI_API_Key") ?? ""
@@ -53,8 +69,6 @@ class AppViewModel {
     
     func fillTestData() {
         resumeInput = """
-        John Doe
-        Software Engineer
         Experience:
         - Senior Developer at Tech Corp (2020-Present): Led a team of 5 developers.
         - Junior Developer at Startup Inc (2018-2020): React and Redux.
@@ -96,7 +110,7 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput)
+            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, lengthInstruction: length.promptInstruction, toneInstruction: tone.promptInstruction, maxTokens: length.maxTokenLimit)
             let cleanedContent = cleanArtifacts(from: rawContent)
             
             // Prepend User Profile Data locally (Privacy)
@@ -112,13 +126,17 @@ class AppViewModel {
                 existing.resumeText = resumeInput
                 existing.jobDescription = jobInput
                 existing.generatedContent = generatedContent
+                existing.lengthOption = length.rawValue
+                existing.toneOption = tone.rawValue
                 existing.createdAt = Date() // touch
             } else {
                 let newLetter = CoverLetter(
                     resumeText: resumeInput,
                     jobDescription: jobInput,
                     generatedContent: generatedContent,
-                    title: "Letter for Position" // Could extract company name later
+                    title: "Letter for Position", // Could extract company name later
+                    lengthOption: length.rawValue,
+                    toneOption: tone.rawValue
                 )
                 context.insert(newLetter)
                 

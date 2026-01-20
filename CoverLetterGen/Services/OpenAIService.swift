@@ -2,15 +2,23 @@ import Foundation
 
 actor OpenAIService {
     private let apiKey: String
-    private let endpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
+    private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
+    private let urlSession: URLSession
     
-    init(apiKey: String) {
+    init(apiKey: String, urlSession: URLSession = .shared) {
         self.apiKey = apiKey
+        self.urlSession = urlSession
     }
     
-    struct ChatCompletionRequest: Encodable {
+    struct ResponsesRequest: Encodable {
         let model: String
-        let messages: [Message]
+        let reasoning: Reasoning?
+        let input: [Message]
+        let max_output_tokens: Int?
+        
+        struct Reasoning: Encodable {
+            let effort: String
+        }
         
         struct Message: Encodable {
             let role: String
@@ -18,55 +26,61 @@ actor OpenAIService {
         }
     }
     
-    struct ChatCompletionResponse: Decodable {
-        let choices: [Choice]
+    struct ResponsesResponse: Decodable {
+        let output: [OutputItem]
         
-        struct Choice: Decodable {
-            let message: Message
+        struct OutputItem: Decodable {
+            let content: [ContentItem]
             
-            struct Message: Decodable {
-                let content: String
+            struct ContentItem: Decodable {
+                let type: String
+                let text: String?
             }
         }
     }
     
-    func generateCoverLetter(resume: String, jobDescription: String) async throws -> String {
+    func generateCoverLetter(resume: String, jobDescription: String, lengthInstruction: String, toneInstruction: String, maxTokens: Int? = nil) async throws -> String {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let prompt = """
-        You are a professional career coach. Write a compelling cover letter based on the following resume and job description.
-        
-        RESUME:
-        \(resume)
-        
-        JOB DESCRIPTION:
-        \(jobDescription)
+        // System prompt (Developer role)
+        let systemPrompt = """
+        You are a professional career coach. Write a compelling cover letter based on the provided resume and job description.
         
         STRICT OUTPUT RULES:
         - Return ONLY the cover letter content.
-        - Do NOT include the sender's contact information (Name, Address, Phone, Email) at the top. I will add this automatically.
-        - Start directly with the Date or the Recipient's details (e.g., [Recipient Name]).
-        - Do NOT include any conversational preamble like "Certainly!" or "Here is the letter".
-        - Do NOT wrap the output in markdown code blocks (no ```).
-        - Do NOT use Markdown headers (lines starting with #). Use **Bold** or CAPS for section titles.
-        - Do NOT use horizontal rules (---).
-        - Use standard paragraph spacing.
+        - Do NOT include the sender's contact information (Name, Address, Phone, Email) at the top.
+        - Start directly with the Date or the Recipient's details.
+        - No conversational preamble.
+        - No markdown code blocks.
+        - No headers or horizontal rules.
         """
         
-        let payload = ChatCompletionRequest(
-            model: "gpt-4o",
-            messages: [
-                .init(role: "system", content: "You are a helpful assistant that writes cover letters. You strictly output only the letter content with no filler."),
-                .init(role: "user", content: prompt)
-            ]
+        // User prompt
+        let userPrompt = generatePrompt(resume: resume, jobDescription: jobDescription, lengthInstruction: lengthInstruction, toneInstruction: toneInstruction)
+        
+        let payload = ResponsesRequest(
+            model: "gpt-5.2",
+            reasoning: .init(effort: "low"),
+            input: [
+                .init(role: "developer", content: systemPrompt),
+                .init(role: "user", content: userPrompt)
+            ],
+            max_output_tokens: maxTokens
         )
         
         request.httpBody = try JSONEncoder().encode(payload)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("Status Code: \(httpResponse.statusCode)")
+        }
+        if let str = String(data: data, encoding: .utf8) {
+             print("Raw Response: \(str)")
+        }
         
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             if let errorText = String(data: data, encoding: .utf8) {
@@ -75,7 +89,28 @@ actor OpenAIService {
             throw NSError(domain: "OpenAIService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Server error"])
         }
         
-        let decodedResponse = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
-        return decodedResponse.choices.first?.message.content ?? "No content generated."
+        let decodedResponse = try JSONDecoder().decode(ResponsesResponse.self, from: data)
+        // Parse nested structure: output[0] -> content[0] -> text
+        if let firstOutput = decodedResponse.output.first,
+           let textContent = firstOutput.content.first(where: { $0.type == "output_text" })?.text {
+            return textContent
+        }
+        
+        return "No content generated."
+    }
+    
+    nonisolated func generatePrompt(resume: String, jobDescription: String, lengthInstruction: String, toneInstruction: String) -> String {
+        return """
+        INSTRUCTIONS:
+        Length: \(lengthInstruction)
+        Tone: \(toneInstruction)
+        
+        RESUME:
+        \(resume)
+        
+        JOB DESCRIPTION:
+        \(jobDescription)
+        """
     }
 }
+

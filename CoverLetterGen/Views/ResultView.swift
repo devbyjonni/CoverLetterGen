@@ -1,45 +1,81 @@
 import SwiftUI
+import SwiftData
 
 struct ResultView: View {
     @Environment(AppViewModel.self) var viewModel
+    @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingSettings = false
     @State private var showingProfile = false
 
+    private var activeLetter: CoverLetter? {
+        viewModel.selectedLetter ?? letters.first
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            if viewModel.generatedContent.isEmpty {
-                EmptyStateView()
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        HStack {
-                            Text("Generated Letter")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                        }
-                        
-                        Text(viewModel.generatedContent) // In a real app, use a Markdown renderer like MarkdownUI
-                            .font(.body)
-                            .textSelection(.enabled)
+            if let letter = activeLetter {
+                // Main Content
+                VStack(spacing: 0) {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            if let error = viewModel.errorMessage {
+                                VStack(spacing: 12) {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .font(.title)
+                                        .foregroundStyle(.red)
+                                    Text("Error")
+                                        .font(.headline)
+                                    Text(error)
+                                        .font(.subheadline)
+                                        .multilineTextAlignment(.center)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.red.opacity(0.1))
+                                .cornerRadius(12)
+                                .padding(.horizontal)
+                            }
+                            
+                            VStack(spacing: 24) {
+                                HStack {
+                                    Text("Generated Letter")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                }
+                                .padding(.bottom, 8)
+                                
+                                VStack(alignment: .leading, spacing: 12) {
+                                    let lengthName = TextLengthOption(rawValue: letter.lengthOption)?.displayName ?? "Medium"
+                                    let toneName = TextToneOption(rawValue: letter.toneOption)?.displayName ?? "Professional"
+                                    Text("\(lengthName) • \(toneName)")
+                                        .font(.headline)
+                                        .foregroundStyle(.secondary)
+                                    
+                                    Text(letter.generatedContent)
+                                        .font(.body)
+                                        .textSelection(.enabled)
+                                        .padding(24)
+                                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.secondary.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
+                                        )
+                                }
+                            }
                             .padding(24)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.secondary.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5]))
-                            )
-                    }
-                    .padding(24)
-                }
-                
-                // Action Buttons
-                VStack {
+                        }
+                    } // End ScrollView
+                    
                     Divider()
+                    
+                    // Action Buttons
                     HStack(spacing: 16) {
                         Button(action: {
-                            UIPasteboard.general.string = viewModel.generatedContent
+                            UIPasteboard.general.string = letter.generatedContent
                         }) {
                             Label("Copy", systemImage: "doc.on.doc")
                                 .frame(maxWidth: .infinity)
@@ -49,18 +85,20 @@ struct ResultView: View {
                                 .cornerRadius(12)
                         }
                         
-                        ShareLink(item: viewModel.generatedContent) {
+                        ShareLink(item: letter.generatedContent) {
                             Label("Share", systemImage: "square.and.arrow.up")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color(uiColor: .tertiarySystemFill))
-                                .foregroundColor(.primary)
-                                .cornerRadius(12)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(uiColor: .tertiarySystemFill))
+                            .foregroundColor(.primary)
+                            .cornerRadius(12)
                         }
                     }
                     .padding(24)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
                 }
-                .background(Color(uiColor: .secondarySystemGroupedBackground))
+            } else {
+                EmptyStateView()
             }
         }
         .background(Color(uiColor: .systemGroupedBackground))
@@ -76,6 +114,7 @@ struct ResultView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+                .environment(viewModel)
         }
         .sheet(isPresented: $showingProfile) {
             ProfileView(viewModel: viewModel)
