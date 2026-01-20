@@ -141,7 +141,6 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-        do {
             let (aiTitle, rawContent) = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, lengthInstruction: length.promptInstruction, toneInstruction: tone.promptInstruction, maxTokens: length.maxTokenLimit)
             var cleanedContent = cleanArtifacts(from: rawContent)
             
