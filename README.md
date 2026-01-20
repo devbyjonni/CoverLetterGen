@@ -12,6 +12,10 @@ CoverLetterGen leverages OpenAI's advanced **GPT-5.2 Responses API** to craft pr
 
 The app features a productivity-focused 3-column layout optimized for iPad, allowing users to manage history, input data, and view results simultaneously.
 
+## 📸 Screenshots
+
+![App Screenshot](screenshots/Screenshot.png)
+
 ## ✨ Key Features
 
 - **Privacy-First Design**: Personal identifiers (Name, Address, Contact Info) are injected locally *after* AI generation, ensuring PII never leaves the device.
