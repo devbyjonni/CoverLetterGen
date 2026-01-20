@@ -11,7 +11,7 @@ struct ResultView: View {
 
     /// Determines which letter to display: specific selection or the latest one.
     private var activeLetter: CoverLetter? {
-        viewModel.selectedLetter ?? letters.first
+        viewModel.selectedLetter
     }
 
     var body: some View {
