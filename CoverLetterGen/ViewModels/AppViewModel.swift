@@ -132,7 +132,12 @@ class AppViewModel {
         
         do {
             let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, lengthInstruction: length.promptInstruction, toneInstruction: tone.promptInstruction, maxTokens: length.maxTokenLimit)
-            let cleanedContent = cleanArtifacts(from: rawContent)
+            var cleanedContent = cleanArtifacts(from: rawContent)
+            
+            // Replace placeholders with real name
+            if !userFullName.isEmpty {
+                cleanedContent = cleanedContent.replacingOccurrences(of: "[Your Name]", with: userFullName)
+            }
             
             // Prepend User Profile Data locally (Privacy)
             let header = senderDetails

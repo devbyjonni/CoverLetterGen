@@ -75,6 +75,7 @@ struct SidebarView: View {
             Button("Delete", role: .destructive) {
                 withAnimation {
                     modelContext.delete(letter)
+                    try? modelContext.save()
                     if viewModel.selectedLetter == letter {
                         viewModel.createNewLetter()
                     }
