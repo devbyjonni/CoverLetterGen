@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ResultView: View {
     @Environment(AppViewModel.self) var viewModel
+    @State private var showingSettings = false
+    @State private var showingProfile = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -61,7 +63,23 @@ struct ResultView: View {
                 .background(Color(uiColor: .secondarySystemGroupedBackground))
             }
         }
-        .background(Color(uiColor: .systemGroupedBackground)) // Right panel usually white in the design
+        .background(Color(uiColor: .systemGroupedBackground))
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button(action: { showingSettings = true }) {
+                    Label("Settings", systemImage: "gear")
+                }
+                Button(action: { showingProfile = true }) {
+                    Label("Profile", systemImage: "person.crop.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showingProfile) {
+            ProfileView(viewModel: viewModel)
+        }
     }
 }
 
