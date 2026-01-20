@@ -1,69 +1,93 @@
 # CoverLetterGen
 
-An intelligent, privacy-first iPad application used to generate tailored cover letters. Built with **Swift 6** and **SwiftUI**, it demonstrates modern iOS architecture patterns including **SwiftData** persistence and the **Observation** framework.
-
 ![Status](https://img.shields.io/badge/Status-Active-success)
-![Platform](https://img.shields.io/badge/Platform-iPadOS-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
+![Platform](https://img.shields.io/badge/Platform-iPadOS-blue)
 
-## 🚀 Overview
+## 📋 Executive Summary
 
-CoverLetterGen leverages OpenAI's advanced **GPT-5.2 Responses API** to craft professional cover letters based on your resume and a target job description. It is designed with a **privacy-first architecture**, ensuring personal details (PII) are stored locally and never transmitted to external AI services.
+**CoverLetterGen** solves the friction of complying with tailored job application requirements while maintaining privacy.
 
-The app features a productivity-focused 3-column layout optimized for iPad, allowing users to manage history, input data, and view results simultaneously.
+In an era where generic applications are ignored, this iPad-first tool leverages **generative AI** to craft highly specific, tone-matched cover letters in seconds. Uniquely, it enforces a **Privacy-First Architecture**: sensitive personal data (PII) is injected locally on the device *after* generation, ensuring that user identity details are never transmitted to external AI providers.
 
-## 📸 Screenshots
+## 🏗 Modern Tech Stack
 
-![App Screenshot](screenshots/Screenshot.png)
+This project is built to demonstrate **modern iOS engineering practices** as of 2025/2026.
 
-## ✨ Key Features
+- **Language**: Swift 6 (Strict Concurrency Checking enabled).
+- **UI Framework**: SwiftUI (using `NavigationSplitView` and value-based navigation).
+- **State Management**: Observation Framework (`@Observable`, `@Bindable`).
+- **Persistence**: SwiftData (modern wrapper for Core Data).
+- **Networking**: `async/await` with `URLSession` and strongly-typed `Codable` models.
 
-- **Privacy-First Design**: Personal identifiers (Name, Address, Contact Info) are injected locally *after* AI generation, ensuring PII never leaves the device.
-- **Advanced AI Integration**: Utilizes the **GPT-5.2 Responses API** with strict schema validation for precise control over output length and tone.
-- **Robust Persistence**: Every generated letter is auto-saved to **SwiftData**, preserving not just the content but the exact context (Tone, Length settings) used to create it.
-- **Smart Context Switching**: Selecting a historical letter instantly restores the application state (inputs + settings) to that point in time.
-- **Modern UI/UX**:
-    - **SwiftUI NavigationSplitView**: Adaptive 3-column layout.
-    - **Real-time Feedback**: Dynamic UI updates using the `@Observable` macro.
-    - **Interactive History**: Swipe-to-delete and instant search/filtering.
+## 💡 Architectural Intent: The "Why"
+
+### Privacy-First Design by Default
+Unlike standard wrappers, this app treats user data as sovereign. The `OpenAIService` only receives the resume content and job description. The application layer (`AppViewModel`) orchestrates the final assembly, prepending personal contact details locally. This separation of concerns ensures PII compliance.
+
+### Strict Concurrency & Thread Safety
+The application adopts **Swift 6 strict concurrency**.
+- **Services**: `OpenAIService` is defined as an `actor`, isolating network state and ensuring thread-safe execution.
+- **ViewModels**: `AppViewModel` is annotated with `@MainActor` to guarantee all UI updates occur on the main thread, eliminating data races.
+
+### Type-Safety as a Feature
+Strings are avoided where possible. Configuration options like **Length** and **Tone** are modeled as strictly typed `enum` cases (`TextLengthOption`, `TextToneOption`). This prevents invalid API states and ensures the UI and Data layer are always synchronized.
 
 ## 🛠 Technical Highlights
 
-This project serves as a showcase for modern Swift development practices:
+- **Concurrency**: Leverages structured concurrency (`Task`, `async/await`) to handle multiple asynchronous streams (AI generation, Persistence) without blocking the UI.
+- **Persistence**: Uses **SwiftData** with `@Model` macro for a declarative schema. Auto-saves generation context (Length/Tone ratings) alongside the content, allowing "time travel" state restoration.
+- **Design Pattern**: MVVM (Model-View-ViewModel) with dependency injection via the SwiftUI `Environment`. This decouples the View layer from business logic, making the codebase testable and modular.
+- **Networking**: Implements a robust networking layer handling the complex **GPT-5.2 Responses API** schema (nested content arrays, developer roles, reasoning parameters) with custom `Decodable` parsing.
+- **Testing**: Includes a comprehensive test suite using `MockURLProtocol` to verify API handling and error states without making live network calls.
 
-- **Swift 6 Concurrency**: Full adoption of strict concurrency checking, `async/await`, and Actor isolation (`@MainActor`, `actor OpenAIService`) to ensure thread safety.
-- **Observation Framework**: Replaces `Combine` and `ObservableObject` with the new `@Observable` macro for more efficient and readable state management.
-- **SwiftData**: Implements a clean persistence layer with `@Model` and `@Query`, demonstrating effective CRUD operations and data migration strategies.
-- **Clean Architecture**:
-    - **MVVM Pattern**: Distinct separation of concerns between Views, ViewModels, and Services.
-    - **Dependency Injection**: Services and ViewModels are injected via the Environment for testability.
-    - **Repository Pattern**: `OpenAIService` acts as a repository for remote data, abstracting API complexity.
-- **Unit Testing**: robust test suite covering ViewModels and Services, including `MockURLProtocol` for deterministic networking tests.
+## 📸 Visuals
 
-## 📦 Tech Stack
+![App Screenshot](screenshots/Screenshot.png)
 
-- **Language**: Swift 6
-- **UI Framework**: SwiftUI
-- **Persistence**: SwiftData
-- **Networking**: URLSession (Native async/await)
-- **External API**: OpenAI (GPT-5.2 / Responses Endpoint)
-- **Tools**: Xcode 15+, XCTest
+## 🏆 Golden Snippets
 
-## 🚀 Getting Started
+Key areas of the codebase that demonstrate complex logic and clean architecture:
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/devbyjonni/CoverLetterGen.git
-   ```
-2. **Open in Xcode**:
-   Open `CoverLetterGen.xcodeproj`.
-3. **Configure API Key**:
-   - Run the app on a Simulator or Device.
-   - Tap simple **Settings** (gear icon) in the toolbar.
-   - Enter your OpenAI API Key (stored securely in `UserDefaults`).
-4. **Build & Run**:
-   Press `Cmd + R` to start.
+### 1. Advanced API Handling
+**File:** [`OpenAIService.swift`](CoverLetterGen/Services/OpenAIService.swift)
+Demonstrates handling the complex nested structure of the GPT-5.2 Responses API, including "Developer" roles for strict strict instruction compliance.
 
-## 📄 License
+```swift
+// Strict schema decoding for nested response structures
+let decodedResponse = try JSONDecoder().decode(ResponsesResponse.self, from: data)
+if let firstOutput = decodedResponse.output.first,
+   let textContent = firstOutput.content.first(where: { $0.type == "output_text" })?.text {
+    return textContent
+}
+```
 
-This project is open source and available under the [MIT License](LICENSE).
+### 2. Robust State & Persistence
+**File:** [`AppViewModel.swift`](CoverLetterGen/ViewModels/AppViewModel.swift)
+Shows how `SwiftData` is used not just for storage, but for state restoration. Selecting a historical letter instantly reconfigures the app's global settings strings to match that letter's original context.
+
+```swift
+var selectedLetter: CoverLetter? {
+    didSet {
+        if let letter = selectedLetter {
+            // Restore Inputs
+            resumeInput = letter.resumeText
+            jobInput = letter.jobDescription
+            
+            // Restore Configuration State from Enum raw values
+            if let l = TextLengthOption(rawValue: letter.lengthOption) { length = l }
+            if let t = TextToneOption(rawValue: letter.toneOption) { tone = t }
+        }
+    }
+}
+```
+
+## 🚀 Setup
+
+1. Clone the repository.
+2. Open `CoverLetterGen.xcodeproj` in Xcode 15+.
+3. Run on iPad Simulator.
+4. Add your OpenAI API Key in Settings (stored securely in UserDefaults).
+
+## License
+MIT
