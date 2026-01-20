@@ -156,7 +156,7 @@ struct EmptyStateView: View {
                 // Icon
                 Image(systemName: "wand.and.stars")
                     .font(.largeTitle)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(viewModel.isGenerating ? .blue : .secondary)
             }
             .padding(10) // Give space for the border
             
