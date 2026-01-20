@@ -1,12 +1,15 @@
 import SwiftUI
 import SwiftData
 
+/// The detail column displaying the generated cover letter.
+/// It observes SwiftData queries to show either the selected letter or the most recent one.
 struct ResultView: View {
     @Environment(AppViewModel.self) var viewModel
     @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingSettings = false
     @State private var showingProfile = false
 
+    /// Determines which letter to display: specific selection or the latest one.
     private var activeLetter: CoverLetter? {
         viewModel.selectedLetter ?? letters.first
     }
@@ -14,10 +17,12 @@ struct ResultView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let letter = activeLetter {
-                // Main Content
+                // MARK: - Main Content
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(spacing: 24) {
+                            
+                            // Error Banner
                             if let error = viewModel.errorMessage {
                                 VStack(spacing: 12) {
                                     Image(systemName: "exclamationmark.triangle")
@@ -37,6 +42,7 @@ struct ResultView: View {
                                 .padding(.horizontal)
                             }
                             
+                            // Generated Letter Card
                             VStack(spacing: 24) {
                                 HStack {
                                     Text("Generated Letter")
@@ -72,7 +78,7 @@ struct ResultView: View {
                     
                     Divider()
                     
-                    // Action Buttons
+                    // MARK: - Action Buttons
                     HStack(spacing: 16) {
                         Button(action: {
                             UIPasteboard.general.string = letter.generatedContent
@@ -122,6 +128,7 @@ struct ResultView: View {
     }
 }
 
+/// Placeholder view shown when no letters exist in history.
 struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 24) {

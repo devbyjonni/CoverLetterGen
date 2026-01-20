@@ -1,5 +1,7 @@
 import Foundation
 
+/// A modern client for OpenAI's Responses API.
+/// Supports GPT-5.2 features including strict output roles and reasoning.
 actor OpenAIService {
     private let apiKey: String
     private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
@@ -10,6 +12,9 @@ actor OpenAIService {
         self.urlSession = urlSession
     }
     
+    // MARK: - Data Models
+    
+    /// The comprehensive request payload for the Responses API.
     struct ResponsesRequest: Encodable {
         let model: String
         let reasoning: Reasoning?
@@ -26,6 +31,7 @@ actor OpenAIService {
         }
     }
     
+    /// The decoded response, handling the complex nested structure of the new API.
     struct ResponsesResponse: Decodable {
         let output: [OutputItem]
         
@@ -39,13 +45,23 @@ actor OpenAIService {
         }
     }
     
+    // MARK: - API Calls
+    
+    /// Generates a cover letter by communicating with the OpenAI Responses API.
+    /// - Parameters:
+    ///   - resume: The user's resume text.
+    ///   - jobDescription: The target job description.
+    ///   - lengthInstruction: Specific instruction for output length (e.g., word count limit).
+    ///   - toneInstruction: Desired tone (e.g., Professional, Conversational).
+    ///   - maxTokens: Optional hard limit for `max_output_tokens`.
+    /// - Returns: The generated cover letter text only, with no artifacts.
     func generateCoverLetter(resume: String, jobDescription: String, lengthInstruction: String, toneInstruction: String, maxTokens: Int? = nil) async throws -> String {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // System prompt (Developer role)
+        // System prompt (Developer role) - Enforces strict output formatting
         let systemPrompt = """
         You are a professional career coach. Write a compelling cover letter based on the provided resume and job description.
         
@@ -58,7 +74,7 @@ actor OpenAIService {
         - No headers or horizontal rules.
         """
         
-        // User prompt
+        // User prompt - Contains the actual data and specific constraints
         let userPrompt = generatePrompt(resume: resume, jobDescription: jobDescription, lengthInstruction: lengthInstruction, toneInstruction: toneInstruction)
         
         let payload = ResponsesRequest(
@@ -75,6 +91,7 @@ actor OpenAIService {
         
         let (data, response) = try await urlSession.data(for: request)
         
+        // Debugging logs to help identify API changes or errors
         if let httpResponse = response as? HTTPURLResponse {
             print("Status Code: \(httpResponse.statusCode)")
         }
@@ -90,7 +107,8 @@ actor OpenAIService {
         }
         
         let decodedResponse = try JSONDecoder().decode(ResponsesResponse.self, from: data)
-        // Parse nested structure: output[0] -> content[0] -> text
+        
+        // Parse the deeply nested structure: output[0] -> content[0] -> text
         if let firstOutput = decodedResponse.output.first,
            let textContent = firstOutput.content.first(where: { $0.type == "output_text" })?.text {
             return textContent
@@ -99,6 +117,9 @@ actor OpenAIService {
         return "No content generated."
     }
     
+    // MARK: - Helpers
+    
+    /// Constructs the final user prompt string.
     nonisolated func generatePrompt(resume: String, jobDescription: String, lengthInstruction: String, toneInstruction: String) -> String {
         return """
         INSTRUCTIONS:

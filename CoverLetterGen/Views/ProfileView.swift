@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// A form for entering personal details.
+/// These details are persisted locally in UserDefaults and are not sent to the AI model.
 struct ProfileView: View {
     @Bindable var viewModel: AppViewModel
     @Environment(\.dismiss) var dismiss

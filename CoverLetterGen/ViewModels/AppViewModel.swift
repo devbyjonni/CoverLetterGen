@@ -5,6 +5,11 @@ import Observation
 @MainActor
 @Observable
 class AppViewModel {
+    
+    // MARK: - State Properties
+    
+    /// The currently selected cover letter.
+    /// Setting this property automatically populates the input fields and generated content.
     var selectedLetter: CoverLetter? {
         didSet {
             if let letter = selectedLetter {
@@ -23,7 +28,9 @@ class AppViewModel {
         }
     }
     
-    // User Profile Data
+    // MARK: - User Profile Data
+    // These properties are persisted to UserDefaults for privacy.
+    
     var userFullName: String = UserDefaults.standard.string(forKey: "userFullName") ?? "" { didSet { UserDefaults.standard.set(userFullName, forKey: "userFullName") } }
     var userJobTitle: String = UserDefaults.standard.string(forKey: "userJobTitle") ?? "" { didSet { UserDefaults.standard.set(userJobTitle, forKey: "userJobTitle") } }
     var userEmail: String = UserDefaults.standard.string(forKey: "userEmail") ?? "" { didSet { UserDefaults.standard.set(userEmail, forKey: "userEmail") } }
@@ -34,7 +41,9 @@ class AppViewModel {
     var userZip: String = UserDefaults.standard.string(forKey: "userZip") ?? "" { didSet { UserDefaults.standard.set(userZip, forKey: "userZip") } }
     var userCountry: String = UserDefaults.standard.string(forKey: "userCountry") ?? "" { didSet { UserDefaults.standard.set(userCountry, forKey: "userCountry") } }
     var userPortfolio: String = UserDefaults.standard.string(forKey: "userPortfolio") ?? "" { didSet { UserDefaults.standard.set(userPortfolio, forKey: "userPortfolio") } }
-    // AI Preferences (Typed)
+    
+    // MARK: - AI Preferences
+    
     var length: TextLengthOption = TextLengthOption(rawValue: UserDefaults.standard.string(forKey: "TextLength") ?? "") ?? .medium {
         didSet { UserDefaults.standard.set(length.rawValue, forKey: "TextLength") }
     }
@@ -43,6 +52,8 @@ class AppViewModel {
         didSet { UserDefaults.standard.set(tone.rawValue, forKey: "TextTone") }
     }
 
+    // MARK: - Input State
+    
     var resumeInput: String = ""
     var jobInput: String = ""
     var isGenerating: Bool = false
@@ -53,20 +64,27 @@ class AppViewModel {
         generatedContent.count.formatted()
     }
     
+    // MARK: - Dependencies
+    
     private var openAIService: OpenAIService? {
         let key = UserDefaults.standard.string(forKey: "OpenAI_API_Key") ?? ""
         guard !key.isEmpty else { return nil }
         return OpenAIService(apiKey: key)
     }
     
+    // MARK: - Actions
+    
+    /// Clears the current selection to allow creating a new letter.
     func createNewLetter() {
         selectedLetter = nil
     }
     
+    /// Selects a letter from history and loads its data.
     func selectLetter(_ letter: CoverLetter) {
         selectedLetter = letter
     }
     
+    /// Fills the input fields with test data for demonstration.
     func fillTestData() {
         resumeInput = """
         Experience:
@@ -82,6 +100,7 @@ class AppViewModel {
         """
     }
     
+    /// Fills the user profile with test data.
     func fillTestProfile() {
         userFullName = "John Doe"
         userJobTitle = "Senior Software Engineer"
@@ -95,6 +114,8 @@ class AppViewModel {
         userPortfolio = "github.com/johndoe"
     }
     
+    /// Generates a cover letter using OpenAI's API.
+    /// - Parameter context: The SwiftData model context to save the generated letter.
     func generateLetter(context: ModelContext) async {
         guard let service = openAIService else {
             errorMessage = "Please configure your OpenAI API Key in Settings."
@@ -121,20 +142,20 @@ class AppViewModel {
                 generatedContent = cleanedContent
             }
             
-            // Save to History
+            // Save to History using SwiftData
             if let existing = selectedLetter {
                 existing.resumeText = resumeInput
                 existing.jobDescription = jobInput
                 existing.generatedContent = generatedContent
                 existing.lengthOption = length.rawValue
                 existing.toneOption = tone.rawValue
-                existing.createdAt = Date() // touch
+                existing.createdAt = Date() // Updates timestamp to show as recent
             } else {
                 let newLetter = CoverLetter(
                     resumeText: resumeInput,
                     jobDescription: jobInput,
                     generatedContent: generatedContent,
-                    title: "Letter for Position", // Could extract company name later
+                    title: "Letter for Position", // Feature idea: Extract company name from job desc
                     lengthOption: length.rawValue,
                     toneOption: tone.rawValue
                 )
@@ -153,6 +174,9 @@ class AppViewModel {
         isGenerating = false
     }
     
+    // MARK: - Helpers
+    
+    /// Removes markdown artifacts like code blocks or horizontal rules from the AI response.
      func cleanArtifacts(from text: String) -> String {
         let lines = text.components(separatedBy: .newlines)
         let processedLines = lines.compactMap { line -> String? in
@@ -175,6 +199,7 @@ class AppViewModel {
         return processedLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
+    /// Constructs the header string from user profile details.
     var senderDetails: String {
         var details = [String]()
         if !userFullName.isEmpty { details.append(userFullName) }

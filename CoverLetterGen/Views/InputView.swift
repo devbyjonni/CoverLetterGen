@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+/// The middle column view collecting user inputs (Resume, Job Description) and triggering generation.
 struct InputView: View {
     @Environment(AppViewModel.self) var viewModel
     @Environment(\.modelContext) private var modelContext
@@ -10,7 +11,8 @@ struct InputView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header
+                    
+                    // MARK: - Header
                     HStack {
                         Text("Input Details")
                             .font(.largeTitle)
@@ -19,7 +21,7 @@ struct InputView: View {
                     }
                     .padding(.bottom, 8)
 
-                    // Resume Input
+                    // MARK: - Resume Input
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("Your Resume")
@@ -48,7 +50,7 @@ struct InputView: View {
                             )
                     }
 
-                    // Job Input
+                    // MARK: - Job Description Input
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("Job Description")
@@ -73,7 +75,7 @@ struct InputView: View {
                 .padding(24)
             }
 
-            // Generate Button Area
+            // MARK: - Action Area
             VStack {
                 Divider()
                 Button(action: {

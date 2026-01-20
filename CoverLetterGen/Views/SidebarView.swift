@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+/// The left column navigation view, displaying the history of generated letters.
 struct SidebarView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppViewModel.self) var viewModel
@@ -11,6 +12,8 @@ struct SidebarView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         List(selection: $viewModel.selectedLetter) {
+            
+            // MARK: - New Letter Action
             Section {
                 Button(action: {
                     withAnimation {
@@ -26,6 +29,7 @@ struct SidebarView: View {
                 .listRowInsets(EdgeInsets())
             }
             
+            // MARK: - History List
             Section(header: Text("History").font(.caption).fontWeight(.semibold)) {
                 if letters.isEmpty {
                     Text("No previous letters yet.")

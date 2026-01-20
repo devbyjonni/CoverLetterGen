@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// The main window content, managing the 3-column split view layout.
 struct ContentView: View {
     @State private var viewModel = AppViewModel()
     @State private var columnVisibility: NavigationSplitViewVisibility = .all

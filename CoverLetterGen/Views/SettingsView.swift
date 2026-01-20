@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// The settings screen for configuring API keys and AI generation preferences.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppViewModel.self) var viewModel
