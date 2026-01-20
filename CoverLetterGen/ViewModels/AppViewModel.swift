@@ -166,7 +166,7 @@ class AppViewModel {
                     resumeText: resumeInput,
                     jobDescription: jobInput,
                     generatedContent: generatedContent,
-                    title: "Letter for Position", // Feature idea: Extract company name from job desc
+                    title: extractTitle(from: jobInput),
                     lengthOption: length.rawValue,
                     toneOption: tone.rawValue
                 )
@@ -186,6 +186,34 @@ class AppViewModel {
     }
     
     // MARK: - Helpers
+    
+    /// Extracts a potential title from the job description (e.g. "Role at Company")
+    private func extractTitle(from text: String) -> String {
+        let lines = text.components(separatedBy: .newlines)
+        var role: String?
+        var company: String?
+        
+        for line in lines {
+            let lower = line.lowercased()
+            if lower.hasPrefix("role: ") {
+                role = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
+            } else if lower.hasPrefix("position: ") {
+                role = String(line.dropFirst(10)).trimmingCharacters(in: .whitespaces)
+            } else if lower.hasPrefix("company: ") {
+                company = String(line.dropFirst(9)).trimmingCharacters(in: .whitespaces)
+            }
+        }
+        
+        if let r = role, let c = company {
+            return "\(r) at \(c)"
+        } else if let r = role {
+            return r
+        } else if let c = company {
+            return "Application for \(c)"
+        }
+        
+        return "Letter for Position"
+    }
     
     /// Removes markdown artifacts like code blocks or horizontal rules from the AI response.
      func cleanArtifacts(from text: String) -> String {
