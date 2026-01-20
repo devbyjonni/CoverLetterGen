@@ -13,7 +13,9 @@ struct SidebarView: View {
         List(selection: $viewModel.selectedLetter) {
             Section {
                 Button(action: {
-                    viewModel.createNewLetter()
+                    withAnimation {
+                        viewModel.createNewLetter()
+                    }
                 }) {
                     Label("New Letter", systemImage: "plus")
                         .font(.headline)
@@ -45,24 +47,28 @@ struct SidebarView: View {
                             .padding(.vertical, 4)
                         }
                         .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
+                            Button {
                                 letterToDelete = letter
                                 showingDeleteAlert = true
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
+                            .tint(.red)
                         }
                     }
                 }
             }
         }
         .listStyle(.sidebar)
+        .animation(.default, value: letters)
         .navigationTitle("CoverLetterGen")
         .alert("Delete Letter?", isPresented: $showingDeleteAlert, presenting: letterToDelete) { letter in
             Button("Delete", role: .destructive) {
-                modelContext.delete(letter)
-                if viewModel.selectedLetter == letter {
-                    viewModel.createNewLetter()
+                withAnimation {
+                    modelContext.delete(letter)
+                    if viewModel.selectedLetter == letter {
+                        viewModel.createNewLetter()
+                    }
                 }
             }
             Button("Cancel", role: .cancel) {}
