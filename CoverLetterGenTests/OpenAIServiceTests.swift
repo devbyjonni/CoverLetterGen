@@ -54,7 +54,19 @@ final class OpenAIServiceTests: XCTestCase {
     /// Tests that the service correctly parses a successful JSON response from the API and extracts the content.
     func testGenerateCoverLetter_Success() async throws {
         // Given
+        let expectedTitle = "Senior Dev at Apple"
         let expectedContent = "This is a generated cover letter."
+        
+        // The service now expects a JSON object serialized as a string inside the OpenAI response 'text' field
+        let innerJson = """
+        {
+            "title": "\(expectedTitle)",
+            "cover_letter": "\(expectedContent)"
+        }
+        """
+        // Escape newlines and quotes for the outer JSON string
+        let escapedInnerJson = innerJson.replacingOccurrences(of: "\n", with: "\\n").replacingOccurrences(of: "\"", with: "\\\"")
+        
         let jsonString = """
         {
             "output": [
@@ -62,7 +74,7 @@ final class OpenAIServiceTests: XCTestCase {
                     "content": [
                         {
                             "type": "output_text",
-                            "text": "\(expectedContent)"
+                            "text": "\(escapedInnerJson)"
                         }
                     ]
                 }
@@ -83,9 +95,10 @@ final class OpenAIServiceTests: XCTestCase {
         service = OpenAIService(apiKey: "test-key", urlSession: mockSession)
         
         // When
-        let content = try await service.generateCoverLetter(resume: "R", jobDescription: "J", lengthInstruction: "S", toneInstruction: "P")
+        let (title, content) = try await service.generateCoverLetter(resume: "R", jobDescription: "J", lengthInstruction: "S", toneInstruction: "P")
         
         // Then
+        XCTAssertEqual(title, expectedTitle)
         XCTAssertEqual(content, expectedContent)
     }
     
