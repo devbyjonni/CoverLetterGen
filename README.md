@@ -82,7 +82,7 @@ var selectedLetter: CoverLetter? {
 ## Setup
 
 1. Clone the repository.
-2. Open `CoverLetterGen.xcodeproj` (Xcode 15+).
+2. Open `CoverLetterGen.xcodeproj` (Xcode 26.2+).
 3. Run on a simulator or device.
 4. Configure the OpenAI API Key in the application settings.
 
