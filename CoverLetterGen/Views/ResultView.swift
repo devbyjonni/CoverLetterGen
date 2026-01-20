@@ -135,19 +135,27 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 24) {
             ZStack {
+                // Rotating Blue Border
+                Circle()
+                    .strokeBorder(
+                        AngularGradient(gradient: Gradient(colors: [.blue, .blue.opacity(0.1)]), center: .center),
+                        lineWidth: 3
+                    )
+                    .frame(width: 90, height: 90)
+                    .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isAnimating)
+                
+                // Static Background
                 Circle()
                     .fill(Color(uiColor: .secondarySystemFill))
                     .frame(width: 80, height: 80)
-                    .scaleEffect(isAnimating ? 1.05 : 0.95)
-                    .opacity(isAnimating ? 0.8 : 0.5)
                 
+                // Icon
                 Image(systemName: "wand.and.stars")
                     .font(.largeTitle)
                     .foregroundStyle(.secondary)
-                    .scaleEffect(isAnimating ? 1.1 : 0.9)
-                    .rotationEffect(.degrees(isAnimating ? 5 : -5))
             }
-            .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: isAnimating)
+            .padding(10) // Give space for the border
             
             Text("Your AI-crafted cover letter will appear here after you click generate.")
                 .font(.body)
