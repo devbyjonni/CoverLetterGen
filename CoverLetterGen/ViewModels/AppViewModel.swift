@@ -77,6 +77,10 @@ class AppViewModel {
     /// Clears the current selection to allow creating a new letter.
     func createNewLetter() {
         selectedLetter = nil
+        resumeInput = ""
+        jobInput = ""
+        generatedContent = ""
+        errorMessage = nil
     }
     
     /// Selects a letter from history and loads its data.
