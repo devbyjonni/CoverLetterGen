@@ -131,6 +131,7 @@ struct ResultView: View {
 /// Placeholder view shown when no letters exist in history.
 struct EmptyStateView: View {
     @Environment(AppViewModel.self) var viewModel
+    @State private var isSpinning = false
     
     var body: some View {
         VStack(spacing: 24) {
@@ -142,9 +143,10 @@ struct EmptyStateView: View {
                         lineWidth: 3
                     )
                     .frame(width: 90, height: 90)
-                    .rotationEffect(.degrees(viewModel.isGenerating ? 360 : 0))
-                    .animation(viewModel.isGenerating ? .linear(duration: 2).repeatForever(autoreverses: false) : .default, value: viewModel.isGenerating)
-                    .opacity(viewModel.isGenerating ? 1 : 0) // Hide when not generating
+                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                    .opacity(viewModel.isGenerating ? 1 : 0)
+                    .animation(.default, value: viewModel.isGenerating) // Smooth fade in/out
                 
                 // Static Background
                 Circle()
@@ -166,5 +168,6 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
+        .onAppear { isSpinning = true }
     }
 }
