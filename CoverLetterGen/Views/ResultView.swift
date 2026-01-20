@@ -96,8 +96,8 @@ struct ResultView: View {
                             Label(isCopied ? "Copied!" : "Copy", systemImage: isCopied ? "checkmark" : "doc.on.doc")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color(uiColor: isCopied ? .systemGreen : .tertiarySystemFill))
-                                .foregroundColor(isCopied ? .white : .primary)
+                                .background(Color(uiColor: .tertiarySystemFill))
+                                .foregroundColor(isCopied ? .green : .primary)
                                 .cornerRadius(12)
                         }
                         
