@@ -8,6 +8,7 @@ struct ResultView: View {
     @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingSettings = false
     @State private var showingProfile = false
+    @State private var isCopied = false
 
     /// Determines which letter to display: specific selection or the latest one.
     private var activeLetter: CoverLetter? {
@@ -82,12 +83,21 @@ struct ResultView: View {
                     HStack(spacing: 16) {
                         Button(action: {
                             UIPasteboard.general.string = letter.generatedContent
+                            withAnimation {
+                                isCopied = true
+                            }
+                            // Reset after 2 seconds
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                withAnimation {
+                                    isCopied = false
+                                }
+                            }
                         }) {
-                            Label("Copy", systemImage: "doc.on.doc")
+                            Label(isCopied ? "Copied!" : "Copy", systemImage: isCopied ? "checkmark" : "doc.on.doc")
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color(uiColor: .tertiarySystemFill))
-                                .foregroundColor(.primary)
+                                .background(Color(uiColor: isCopied ? .systemGreen : .tertiarySystemFill))
+                                .foregroundColor(isCopied ? .white : .primary)
                                 .cornerRadius(12)
                         }
                         
@@ -160,11 +170,20 @@ struct EmptyStateView: View {
             }
             .padding(10) // Give space for the border
             
-            Text(viewModel.isGenerating ? "Crafting your cover letter..." : "Your AI-crafted cover letter will appear here after you click generate.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 250)
+            ZStack {
+                // Hidden text to reserve layout space prevents jumping
+                Text("Your AI-crafted cover letter will appear here after you click generate.")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 250)
+                    .hidden()
+                
+                Text(viewModel.isGenerating ? "Crafting your cover letter..." : "Your AI-crafted cover letter will appear here after you click generate.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 250)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
