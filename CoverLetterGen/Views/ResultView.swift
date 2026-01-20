@@ -130,16 +130,24 @@ struct ResultView: View {
 
 /// Placeholder view shown when no letters exist in history.
 struct EmptyStateView: View {
+    @State private var isAnimating = false
+    
     var body: some View {
         VStack(spacing: 24) {
             ZStack {
                 Circle()
                     .fill(Color(uiColor: .secondarySystemFill))
                     .frame(width: 80, height: 80)
+                    .scaleEffect(isAnimating ? 1.05 : 0.95)
+                    .opacity(isAnimating ? 0.8 : 0.5)
+                
                 Image(systemName: "wand.and.stars")
                     .font(.largeTitle)
                     .foregroundStyle(.secondary)
+                    .scaleEffect(isAnimating ? 1.1 : 0.9)
+                    .rotationEffect(.degrees(isAnimating ? 5 : -5))
             }
+            .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: isAnimating)
             
             Text("Your AI-crafted cover letter will appear here after you click generate.")
                 .font(.body)
@@ -149,5 +157,8 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
+        .onAppear {
+            isAnimating = true
+        }
     }
 }
