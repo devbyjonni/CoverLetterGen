@@ -141,7 +141,8 @@ class AppViewModel {
         errorMessage = nil
         
         do {
-            let rawContent = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, lengthInstruction: length.promptInstruction, toneInstruction: tone.promptInstruction, maxTokens: length.maxTokenLimit)
+        do {
+            let (aiTitle, rawContent) = try await service.generateCoverLetter(resume: resumeInput, jobDescription: jobInput, lengthInstruction: length.promptInstruction, toneInstruction: tone.promptInstruction, maxTokens: length.maxTokenLimit)
             var cleanedContent = cleanArtifacts(from: rawContent)
             
             // Replace placeholders with real name
@@ -165,12 +166,15 @@ class AppViewModel {
                 existing.lengthOption = length.rawValue
                 existing.toneOption = tone.rawValue
                 existing.createdAt = Date() // Updates timestamp to show as recent
+                // Optionally update title if re-generating, but maybe user customized it? 
+                // Let's update it to the smart title since it's a "re-generation" action.
+                existing.title = aiTitle
             } else {
                 let newLetter = CoverLetter(
                     resumeText: resumeInput,
                     jobDescription: jobInput,
                     generatedContent: generatedContent,
-                    title: extractTitle(from: jobInput),
+                    title: aiTitle,
                     lengthOption: length.rawValue,
                     toneOption: tone.rawValue
                 )
@@ -190,34 +194,6 @@ class AppViewModel {
     }
     
     // MARK: - Helpers
-    
-    /// Extracts a potential title from the job description (e.g. "Role at Company")
-    private func extractTitle(from text: String) -> String {
-        let lines = text.components(separatedBy: .newlines)
-        var role: String?
-        var company: String?
-        
-        for line in lines {
-            let lower = line.lowercased()
-            if lower.hasPrefix("role: ") {
-                role = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
-            } else if lower.hasPrefix("position: ") {
-                role = String(line.dropFirst(10)).trimmingCharacters(in: .whitespaces)
-            } else if lower.hasPrefix("company: ") {
-                company = String(line.dropFirst(9)).trimmingCharacters(in: .whitespaces)
-            }
-        }
-        
-        if let r = role, let c = company {
-            return "\(r) at \(c)"
-        } else if let r = role {
-            return r
-        } else if let c = company {
-            return "Application for \(c)"
-        }
-        
-        return "Letter for Position"
-    }
     
     /// Removes markdown artifacts like code blocks or horizontal rules from the AI response.
      func cleanArtifacts(from text: String) -> String {
