@@ -88,15 +88,21 @@ class AppViewModel {
     func fillTestData() {
         resumeInput = """
         Experience:
-        - Senior Developer at Tech Corp (2020-Present): Led a team of 5 developers.
-        - Junior Developer at Startup Inc (2018-2020): React and Redux.
-        Skills: React, Node.js, TypeScript, SQL, AWS, Docker
-        Education: BS in Computer Science
+        - Senior Backend Engineer at NovaPay (2021-Present): Architected high-volume payment processing service handling $50M/day. Migrated legacy monolith to Go microservices, reducing latency by 40%.
+        - Software Engineer at DataFlow Inc (2018-2021): Built real-time analytics dashboard using React and Node.js.
+        Skills: Go, Python, TypeScript, AWS (Lambda, DynamoDB), Kubernetes, PostgreSQL, System Design.
+        Education: MS in Computer Science, Georgia Tech.
         """
         
         jobInput = """
-        We are looking for a Senior Software Engineer to join our cloud infra team.
-        Must have experience with AWS and leading teams.
+        Role: Principal Software Engineer (Platform)
+        Company: KubeScale
+        
+        We are looking for an experienced leader to drive the evolution of our internal developer platform.
+        Requirements:
+        - 5+ years of production experience with Go or Rust.
+        - Deep expertise in distributed systems and Kubernetes operators.
+        - Track record of designing high-availability APIs and mentoring senior engineers.
         """
     }
     
