@@ -130,7 +130,7 @@ struct ResultView: View {
 
 /// Placeholder view shown when no letters exist in history.
 struct EmptyStateView: View {
-    @State private var isAnimating = false
+    @Environment(AppViewModel.self) var viewModel
     
     var body: some View {
         VStack(spacing: 24) {
@@ -142,8 +142,9 @@ struct EmptyStateView: View {
                         lineWidth: 3
                     )
                     .frame(width: 90, height: 90)
-                    .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isAnimating)
+                    .rotationEffect(.degrees(viewModel.isGenerating ? 360 : 0))
+                    .animation(viewModel.isGenerating ? .linear(duration: 2).repeatForever(autoreverses: false) : .default, value: viewModel.isGenerating)
+                    .opacity(viewModel.isGenerating ? 1 : 0) // Hide when not generating
                 
                 // Static Background
                 Circle()
@@ -157,7 +158,7 @@ struct EmptyStateView: View {
             }
             .padding(10) // Give space for the border
             
-            Text("Your AI-crafted cover letter will appear here after you click generate.")
+            Text(viewModel.isGenerating ? "Crafting your cover letter..." : "Your AI-crafted cover letter will appear here after you click generate.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -165,8 +166,5 @@ struct EmptyStateView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
-        .onAppear {
-            isAnimating = true
-        }
     }
 }
