@@ -1,8 +1,12 @@
 import Foundation
 
+nonisolated protocol OpenAIGenerating: Sendable {
+    func generateCoverLetter(resume: String, jobDescription: String, lengthInstruction: String, toneInstruction: String, maxTokens: Int?) async throws -> (title: String, content: String)
+}
+
 /// A modern client for OpenAI's Responses API.
 /// Supports GPT-5.2 features including strict output roles and reasoning.
-actor OpenAIService {
+actor OpenAIService: OpenAIGenerating {
     private let apiKey: String
     private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
     private let urlSession: URLSession
@@ -143,4 +147,3 @@ actor OpenAIService {
         """
     }
 }
-

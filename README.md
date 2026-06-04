@@ -29,6 +29,8 @@ To prevent PII leakage, the application separates generation from data assembly:
 The project adopts strict concurrency checking to ensure thread safety:
 - **Actor Isolation**: `OpenAIService` is defined as an `actor` to serialize network requests and manage session state.
 - **Main Actor**: `AppViewModel` is isolated to `@MainActor`, ensuring all state mutations and UI updates occur on the main thread without manual dispatching.
+- **Generation Snapshotting**: `AppViewModel` captures the selected letter, inputs, tone, length, and local profile header before awaiting the OpenAI request. This prevents in-flight generation from saving results to the wrong letter if the user changes selection while the request is running.
+- **Dependency Injection**: OpenAI generation is accessed through the `OpenAIGenerating` protocol, making generation behavior testable without live network calls.
 
 ### Persistence Strategy
 Data persistence is handled by **SwiftData**:
@@ -82,9 +84,29 @@ var selectedLetter: CoverLetter? {
 ## Setup
 
 1. Clone the repository.
-2. Open `CoverLetterGen.xcodeproj` (Xcode 26.2+).
+2. Open `CoverLetterGen.xcodeproj` (Xcode 26.5+ recommended).
 3. Run on a simulator or device.
 4. Configure the OpenAI API Key in the application settings.
+
+## Build & Test
+
+If `xcode-select` points at Command Line Tools, use `DEVELOPER_DIR` so SwiftData and Observation macros are available from Xcode:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild test \
+  -project CoverLetterGen.xcodeproj \
+  -scheme CoverLetterGen \
+  -destination 'platform=iOS Simulator,name=iPad (A16),OS=26.5' \
+  -derivedDataPath /tmp/CoverLetterGenDerivedData \
+  CODE_SIGNING_ALLOWED=NO \
+  -only-testing:CoverLetterGenTests
+```
+
+To make Xcode the default developer directory:
+
+```sh
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
 
 ## License
 MIT
