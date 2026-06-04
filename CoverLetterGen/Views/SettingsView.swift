@@ -4,14 +4,13 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppViewModel.self) var viewModel
-    @AppStorage("OpenAI_API_Key") private var apiKey: String = ""
     
     var body: some View {
         @Bindable var viewModel = viewModel
         NavigationStack {
             Form {
                 Section(header: Text("OpenAI Configuration"), footer: Text("Your API key is stored locally on this device.")) {
-                    SecureField("API Key", text: $apiKey)
+                    SecureField("API Key", text: $viewModel.apiKey)
                         .textContentType(.password)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)

@@ -1,11 +1,9 @@
 import SwiftUI
-import SwiftData
 
 /// The detail column displaying the generated cover letter.
 /// It observes SwiftData queries to show either the selected letter or the most recent one.
 struct ResultView: View {
     @Environment(AppViewModel.self) var viewModel
-    @Query(sort: \CoverLetter.createdAt, order: .reverse) private var letters: [CoverLetter]
     @State private var showingSettings = false
     @State private var showingProfile = false
     @State private var isCopied = false
@@ -22,27 +20,12 @@ struct ResultView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(spacing: 24) {
-                            
-                            // Error Banner
+
                             if let error = viewModel.errorMessage {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .font(.title)
-                                        .foregroundStyle(.red)
-                                    Text("Error")
-                                        .font(.headline)
-                                    Text(error)
-                                        .font(.subheadline)
-                                        .multilineTextAlignment(.center)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.red.opacity(0.1))
-                                .cornerRadius(12)
-                                .padding(.horizontal)
+                                ErrorBanner(message: error)
+                                    .padding(.horizontal)
                             }
-                            
+
                             // Generated Letter Card
                             VStack(spacing: 24) {
                                 HStack {
@@ -53,14 +36,14 @@ struct ResultView: View {
                                     Spacer()
                                 }
                                 .padding(.bottom, 8)
-                                
+
                                 VStack(alignment: .leading, spacing: 12) {
                                     let lengthName = TextLengthOption(rawValue: letter.lengthOption)?.displayName ?? "Medium"
                                     let toneName = TextToneOption(rawValue: letter.toneOption)?.displayName ?? "Professional"
                                     Text("\(lengthName) • \(toneName)")
                                         .font(.headline)
                                         .foregroundStyle(.secondary)
-                                    
+
                                     Text(letter.generatedContent)
                                         .font(.body)
                                         .textSelection(.enabled)
@@ -76,9 +59,9 @@ struct ResultView: View {
                             .padding(24)
                         }
                     } // End ScrollView
-                    
+
                     Divider()
-                    
+
                     // MARK: - Action Buttons
                     HStack(spacing: 16) {
                         Button(action: {
@@ -100,7 +83,7 @@ struct ResultView: View {
                                 .foregroundColor(isCopied ? .green : .primary)
                                 .cornerRadius(12)
                         }
-                        
+
                         ShareLink(item: letter.generatedContent) {
                             Label("Share", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
@@ -118,6 +101,9 @@ struct ResultView: View {
             }
         }
         .background(Color(uiColor: .systemGroupedBackground))
+        .onChange(of: viewModel.selectedLetter?.id) {
+            isCopied = false
+        }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { showingSettings = true }) {
@@ -142,9 +128,15 @@ struct ResultView: View {
 struct EmptyStateView: View {
     @Environment(AppViewModel.self) var viewModel
     @State private var isSpinning = false
-    
+
     var body: some View {
         VStack(spacing: 24) {
+            if let error = viewModel.errorMessage {
+                ErrorBanner(message: error)
+                    .frame(maxWidth: 420)
+                    .padding(.horizontal)
+            }
+
             ZStack {
                 // Rotating Blue Border
                 Circle()
@@ -157,19 +149,19 @@ struct EmptyStateView: View {
                     .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
                     .opacity(viewModel.isGenerating ? 1 : 0)
                     .animation(.default, value: viewModel.isGenerating) // Smooth fade in/out
-                
+
                 // Static Background
                 Circle()
                     .fill(Color(uiColor: .secondarySystemFill))
                     .frame(width: 80, height: 80)
-                
+
                 // Icon
                 Image(systemName: "wand.and.stars")
                     .font(.largeTitle)
                     .foregroundStyle(viewModel.isGenerating ? .blue : .secondary)
             }
             .padding(10) // Give space for the border
-            
+
             ZStack {
                 // Hidden text to reserve layout space prevents jumping
                 Text("Your AI-crafted cover letter will appear here after you click generate.")
@@ -177,7 +169,7 @@ struct EmptyStateView: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 250)
                     .hidden()
-                
+
                 Text(viewModel.isGenerating ? "Crafting your cover letter..." : "Your AI-crafted cover letter will appear here after you click generate.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -188,5 +180,27 @@ struct EmptyStateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
         .onAppear { isSpinning = true }
+    }
+}
+
+private struct ErrorBanner: View {
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.title)
+                .foregroundStyle(.red)
+            Text("Error")
+                .font(.headline)
+            Text(message)
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color.red.opacity(0.1))
+        .cornerRadius(12)
     }
 }

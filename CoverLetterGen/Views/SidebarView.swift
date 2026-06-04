@@ -74,11 +74,7 @@ struct SidebarView: View {
         .alert("Delete Letter?", isPresented: $showingDeleteAlert, presenting: letterToDelete) { letter in
             Button("Delete", role: .destructive) {
                 withAnimation {
-                    modelContext.delete(letter)
-                    try? modelContext.save()
-                    if viewModel.selectedLetter == letter {
-                        viewModel.createNewLetter()
-                    }
+                    viewModel.deleteLetter(letter, context: modelContext)
                 }
             }
             Button("Cancel", role: .cancel) {}

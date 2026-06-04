@@ -18,6 +18,7 @@ struct ProfileView: View {
                 Section(header: HStack {
                     Text("Personal Info")
                     Spacer()
+                    #if DEBUG
                     Button(action: { viewModel.fillTestProfile() }) {
                         Label("Fill Test Data", systemImage: "wand.and.stars")
                             .font(.caption)
@@ -26,6 +27,7 @@ struct ProfileView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.blue)
                     .textCase(nil)
+                    #endif
                 }) {
                     TextField("Full Name", text: $viewModel.userFullName)
                         .textContentType(.name)

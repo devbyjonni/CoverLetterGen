@@ -64,6 +64,12 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.characterCountFormatted, "0")
     }
 
+    func testAPIKeyPersistsThroughViewModel() {
+        viewModel.apiKey = "updated-key"
+
+        XCTAssertEqual(userDefaults.string(forKey: "OpenAI_API_Key"), "updated-key")
+    }
+
     func testGenerateLetter_WithMissingAPIKeyShowsError() async {
         userDefaults.removeObject(forKey: "OpenAI_API_Key")
         viewModel.resumeInput = "Resume"
@@ -134,6 +140,23 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertEqual(secondLetter.resumeText, "Other Resume")
         XCTAssertEqual(viewModel.selectedLetter, secondLetter)
         XCTAssertEqual(viewModel.generatedContent, secondLetter.generatedContent)
+    }
+
+    func testDeleteLetter_RemovesLetterAndClearsSelection() throws {
+        let letter = CoverLetter(resumeText: "Resume", jobDescription: "Job", generatedContent: "Generated")
+        modelContext.insert(letter)
+        try modelContext.save()
+        viewModel.selectLetter(letter)
+
+        viewModel.deleteLetter(letter, context: modelContext)
+
+        let letters = try modelContext.fetch(FetchDescriptor<CoverLetter>())
+        XCTAssertTrue(letters.isEmpty)
+        XCTAssertNil(viewModel.selectedLetter)
+        XCTAssertEqual(viewModel.resumeInput, "")
+        XCTAssertEqual(viewModel.jobInput, "")
+        XCTAssertEqual(viewModel.generatedContent, "")
+        XCTAssertNil(viewModel.errorMessage)
     }
 
     private func waitForMockServiceRequest() async throws {

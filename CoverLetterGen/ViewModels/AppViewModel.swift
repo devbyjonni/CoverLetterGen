@@ -53,6 +53,10 @@ class AppViewModel {
         didSet { userDefaults.set(tone.rawValue, forKey: "TextTone") }
     }
 
+    var apiKey: String {
+        didSet { userDefaults.set(apiKey, forKey: "OpenAI_API_Key") }
+    }
+
     // MARK: - Input State
 
     var resumeInput: String = ""
@@ -94,6 +98,7 @@ class AppViewModel {
         self.userPortfolio = userDefaults.string(forKey: "userPortfolio") ?? ""
         self.length = TextLengthOption(rawValue: userDefaults.string(forKey: "TextLength") ?? "") ?? .medium
         self.tone = TextToneOption(rawValue: userDefaults.string(forKey: "TextTone") ?? "") ?? .professional
+        self.apiKey = userDefaults.string(forKey: "OpenAI_API_Key") ?? ""
     }
 
     // MARK: - Actions
@@ -110,6 +115,18 @@ class AppViewModel {
     /// Selects a letter from history and loads its data.
     func selectLetter(_ letter: CoverLetter) {
         selectedLetter = letter
+    }
+
+    func deleteLetter(_ letter: CoverLetter, context: ModelContext) {
+        do {
+            context.delete(letter)
+            try context.save()
+            if selectedLetter == letter {
+                createNewLetter()
+            }
+        } catch {
+            errorMessage = "Could not delete letter: \(error.localizedDescription)"
+        }
     }
 
     /// Fills the input fields with test data for demonstration.

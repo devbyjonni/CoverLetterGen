@@ -28,6 +28,7 @@ struct InputView: View {
                                 .font(.headline)
                                 .foregroundStyle(.secondary)
                             Spacer()
+                            #if DEBUG
                             Button(action: { viewModel.fillTestData() }) {
                                 Label("Fill Test Data", systemImage: "wand.and.stars")
                                     .font(.caption)
@@ -35,6 +36,7 @@ struct InputView: View {
                             }
                             .buttonStyle(.plain)
                             .foregroundStyle(.blue)
+                            #endif
                         }
 
                         TextEditor(text: $viewModel.resumeInput)
