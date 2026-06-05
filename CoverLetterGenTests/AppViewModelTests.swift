@@ -12,8 +12,8 @@ final class AppViewModelTests: XCTestCase {
     var modelContext: ModelContext!
     private var openAIService: MockOpenAIService!
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() async throws {
+        try await super.setUp()
         userDefaultsSuiteName = "AppViewModelTests-\(UUID().uuidString)"
         userDefaults = UserDefaults(suiteName: userDefaultsSuiteName)!
         userDefaults.set("test-key", forKey: "OpenAI_API_Key")
@@ -26,7 +26,7 @@ final class AppViewModelTests: XCTestCase {
         modelContext = modelContainer.mainContext
     }
 
-    override func tearDown() {
+    override func tearDown() async throws {
         if let userDefaultsSuiteName {
             userDefaults?.removePersistentDomain(forName: userDefaultsSuiteName)
         }
@@ -36,7 +36,7 @@ final class AppViewModelTests: XCTestCase {
         viewModel = nil
         userDefaults = nil
         userDefaultsSuiteName = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     /// Tests that the character count is formatted with locale-aware separators (e.g., "1,234").

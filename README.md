@@ -3,94 +3,111 @@
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
 ![Platform](https://img.shields.io/badge/Platform-iPadOS-blue)
+![Architecture](https://img.shields.io/badge/Architecture-MVVM-lightgrey)
 
-## Project Overview
+CoverLetterGen is a native iPadOS app for drafting tailored cover letters from a resume and job description. I built it as a practical SwiftUI project with a focus on clean architecture, local privacy, Swift 6 concurrency, and testable OpenAI API integration.
 
-**CoverLetterGen** is a native iPad application that generates cover letters using the OpenAI API. It automates the formatting and drafting process while ensuring that personally identifiable information (PII) remains local to the device.
+The app keeps the workflow simple: paste a resume, paste a job description, choose a length and tone, then generate a cover letter that can be reviewed, copied, and saved in local history.
 
-## Technical Specifications
+## Project Highlights
 
-- **Language**: Swift 6
-- **Architecture**: MVVM
-- **UI Framework**: SwiftUI
-- **Persistence**: SwiftData
-- **Concurrency**: Swift Structured Concurrency (Async/Await, Actors)
-- **External API**: OpenAI (Responses Endpoint)
+- **Swift 6** project configuration across the app, unit test, and UI test targets.
+- **SwiftUI + MVVM** structure with views kept focused on presentation and `AppViewModel` handling app state and user actions.
+- **SwiftData persistence** for generated cover letter history.
+- **OpenAI Responses API** integration through a dedicated actor-based service.
+- **Privacy-conscious generation flow** that keeps user contact details local instead of sending them to the model.
+- **Dependency injection** around OpenAI generation so the main workflow can be tested without live network calls.
+- **Deterministic unit tests** covering generation behavior, persistence updates, API response parsing, and error handling.
 
-## Architecture & Implementation
+## Tech Stack
 
-### Privacy Mechanism
-To prevent PII leakage, the application separates generation from data assembly:
-1.  **Generation**: The `OpenAIService` sends only the anonymized resume text and job description to the LLM.
-2.  **Assembly**: The `AppViewModel` receives the raw text and prepends the user's contact details (name, address, phone) locally.
-3.  **Storage**: User profile data is persisted in `UserDefaults`, while generated content is stored in `SwiftData`.
+| Area | Implementation |
+| --- | --- |
+| Language | Swift 6 |
+| UI | SwiftUI |
+| Architecture | MVVM |
+| State observation | Observation |
+| Persistence | SwiftData + UserDefaults |
+| Concurrency | async/await, actors, `@MainActor` |
+| Networking | URLSession + Codable |
+| API | OpenAI Responses endpoint |
+| Tests | XCTest, in-memory SwiftData, `MockURLProtocol` |
 
-### Concurrency (Swift 6)
-The project adopts strict concurrency checking to ensure thread safety:
-- **Actor Isolation**: `OpenAIService` is defined as an `actor` to serialize network requests and manage session state.
-- **Main Actor**: `AppViewModel` is isolated to `@MainActor`, ensuring all state mutations and UI updates occur on the main thread without manual dispatching.
-- **Generation Snapshotting**: `AppViewModel` captures the selected letter, inputs, tone, length, and local profile header before awaiting the OpenAI request. This prevents in-flight generation from saving results to the wrong letter if the user changes selection while the request is running.
-- **Dependency Injection**: OpenAI generation is accessed through the `OpenAIGenerating` protocol, making generation behavior testable without live network calls.
+## Architecture
 
-### Persistence Strategy
-Data persistence is handled by **SwiftData**:
-- **Schema**: The `CoverLetter` model stores the generated text along with the configuration state used at the time of generation (`TextLengthOption`, `TextToneOption`).
-- **State Restoration**: Selecting a historical item re-initializes the application state (Input fields, Tone, Length) to match that record, enabling context switching.
+The app is organized around a small MVVM structure:
 
-### Networking
-Networking is implemented using `URLSession` and custom `Codable` structs.
-- **Schema Validation**: The client maps the nested response structure of the GPT-5.2 API (`output` -> `content` -> `text`) to strongly typed models.
-- **Testing**: Deterministic tests are implemented using a `MockURLProtocol`, allowing the service to be tested without live API calls.
+- **Views** render the interface and forward user actions.
+- **AppViewModel** owns screen state, validation, generation orchestration, and SwiftData updates.
+- **OpenAIService** is an `actor` that handles network requests and response parsing.
+- **Models** define persisted cover letters and the selectable length/tone options.
 
-## Visuals
+This keeps the UI layer lightweight while still making the generation flow easy to follow and test.
 
-![App Screenshot](screenshots/Screenshot.png)
+## Privacy Approach
 
-## Code Examples
+Cover letters often include personal details, so the app separates model generation from local assembly:
 
-### API Response Handling
-**File:** [`OpenAIService.swift`](CoverLetterGen/Services/OpenAIService.swift)
-Parsing the nested response structure from the Responses API.
+1. **Generated remotely**: resume text, job description, tone, and length instructions are sent to OpenAI.
+2. **Kept local**: name, email, phone, address, and portfolio details are stored locally in `UserDefaults`.
+3. **Assembled on device**: the generated letter is combined with the local profile header after the API call returns.
+4. **Saved locally**: finished cover letters are stored with SwiftData on the device.
+
+This design reduces unnecessary PII exposure while preserving a polished final document.
+
+## Swift 6 Concurrency
+
+The project is configured for Swift 6 and uses modern concurrency patterns:
+
+- `OpenAIService` is an `actor`, which isolates network client state.
+- `AppViewModel` is `@MainActor`, keeping UI-facing mutations on the main actor.
+- Generation requests snapshot the selected letter, resume, job description, tone, length, and local profile header before awaiting the API call.
+- Test doubles use actor isolation or thread-safe storage so the test target also builds cleanly under Swift 6.
+
+The snapshotting is important: if a user starts generation and then selects another saved letter before the request finishes, the result is applied to the original letter instead of whichever item happens to be selected later.
+
+## OpenAI Response Handling
+
+The service uses strongly typed request and response models for the Responses API. The model is instructed to return JSON containing a title and cover letter, then the client parses the nested `output -> content -> output_text` structure.
 
 ```swift
 let decodedResponse = try JSONDecoder().decode(ResponsesResponse.self, from: data)
 
-// Parse nested structure: output[0] -> content[0] -> text
 if let firstOutput = decodedResponse.output.first,
-   let textContent = firstOutput.content.first(where: { $0.type == "output_text" })?.text {
-    return textContent
+   let textContent = firstOutput.content.first(where: { $0.type == "output_text" })?.text,
+   let data = textContent.data(using: .utf8),
+   let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+   let title = json["title"],
+   let content = json["cover_letter"] {
+    return (title, content)
 }
 ```
 
-### State Restoration
-**File:** [`AppViewModel.swift`](CoverLetterGen/ViewModels/AppViewModel.swift)
-Restoring configuration state from a persisted model. The usage of Enums prevents invalid state.
+The app also has fallback handling for plain text responses, so the user is not left with an empty result if the model returns usable text that is not valid JSON.
 
-```swift
-var selectedLetter: CoverLetter? {
-    didSet {
-        if let letter = selectedLetter {
-            resumeInput = letter.resumeText
-            jobInput = letter.jobDescription
-            
-            // Restore Settings from persisted raw values
-            if let l = TextLengthOption(rawValue: letter.lengthOption) { length = l }
-            if let t = TextToneOption(rawValue: letter.toneOption) { tone = t }
-        }
-    }
-}
-```
+## Persistence
 
-## Setup
+Generated letters are stored with SwiftData using the `CoverLetter` model. Each saved item keeps:
 
-1. Clone the repository.
-2. Open `CoverLetterGen.xcodeproj` (Xcode 26.5+ recommended).
-3. Run on a simulator or device.
-4. Configure the OpenAI API Key in the application settings.
+- Resume text
+- Job description
+- Generated cover letter
+- Selected length option
+- Selected tone option
+- Creation/update date
 
-## Build & Test
+When a saved letter is selected, the app restores its input fields and generation settings. This makes the history useful as an editable workspace, not just an archive.
 
-If `xcode-select` points at Command Line Tools, use `DEVELOPER_DIR` so SwiftData and Observation macros are available from Xcode:
+## Testing
+
+The test suite is designed to avoid live API calls and external state:
+
+- `AppViewModelTests` use an in-memory SwiftData container.
+- A mock `OpenAIGenerating` actor verifies generation behavior without network traffic.
+- `OpenAIServiceTests` use `MockURLProtocol` for deterministic API success and failure responses.
+- The test target builds under Swift 6 with concurrency-safe test doubles.
+
+Current local verification:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild test \
@@ -102,11 +119,42 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild test \
   -only-testing:CoverLetterGenTests
 ```
 
-To make Xcode the default developer directory:
+Result: **12 unit tests passing**.
+
+## Visuals
+
+![App Screenshot](screenshots/Screenshot.png)
+
+## Setup
+
+1. Clone the repository.
+2. Open `CoverLetterGen.xcodeproj` in Xcode 26.5 or newer.
+3. Run the app on an iPad simulator or device.
+4. Add an OpenAI API key in the app's settings screen.
+
+If `xcode-select` points to Command Line Tools, SwiftData and Observation macro plugins may be unavailable from command-line builds. Use `DEVELOPER_DIR`:
+
+```sh
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
+  -project CoverLetterGen.xcodeproj \
+  -scheme CoverLetterGen \
+  -configuration Debug \
+  -destination generic/platform=iOS \
+  -derivedDataPath /tmp/CoverLetterGenDerivedData \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Or make Xcode the default developer directory:
 
 ```sh
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
+## What This Project Demonstrates
+
+This project shows how I approach small product-focused apps: keep the interface approachable, keep sensitive data local where possible, isolate network code, make state changes predictable, and write tests around the parts most likely to break.
+
 ## License
+
 MIT

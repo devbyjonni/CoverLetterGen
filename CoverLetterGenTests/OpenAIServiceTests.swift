@@ -11,6 +11,7 @@ final class OpenAIServiceTests: XCTestCase {
     }
     
     override func tearDown() {
+        MockURLProtocol.clearRequestHandler()
         service = nil
         super.tearDown()
     }
@@ -83,7 +84,7 @@ final class OpenAIServiceTests: XCTestCase {
         """
         let mockData = jsonString.data(using: .utf8)!
         
-        MockURLProtocol.requestHandler = { request in
+        MockURLProtocol.setRequestHandler { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, mockData)
         }
@@ -105,7 +106,7 @@ final class OpenAIServiceTests: XCTestCase {
     /// Tests that the service throws an error when the API returns a server error (e.g., 500), ensuring robust error handling.
     func testGenerateCoverLetter_ServerError() async {
         // Given
-        MockURLProtocol.requestHandler = { request in
+        MockURLProtocol.setRequestHandler { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
             return (response, Data())
         }
@@ -127,8 +128,47 @@ final class OpenAIServiceTests: XCTestCase {
 }
 
 // MARK: - MockURLProtocol
-class MockURLProtocol: URLProtocol {
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+private final class MockURLProtocolHandlerStore: @unchecked Sendable {
+    typealias Handler = @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)
+
+    private let lock = NSLock()
+    private var handler: Handler?
+
+    func set(_ handler: @escaping Handler) {
+        lock.lock()
+        self.handler = handler
+        lock.unlock()
+    }
+
+    func clear() {
+        lock.lock()
+        handler = nil
+        lock.unlock()
+    }
+
+    func handle(_ request: URLRequest) throws -> (HTTPURLResponse, Data) {
+        lock.lock()
+        let handler = handler
+        lock.unlock()
+
+        guard let handler else {
+            fatalError("Handler is unavailable.")
+        }
+
+        return try handler(request)
+    }
+}
+
+final class MockURLProtocol: URLProtocol {
+    private static let handlerStore = MockURLProtocolHandlerStore()
+
+    static func setRequestHandler(_ handler: @escaping @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)) {
+        handlerStore.set(handler)
+    }
+
+    static func clearRequestHandler() {
+        handlerStore.clear()
+    }
     
     override class func canInit(with request: URLRequest) -> Bool {
         return true
@@ -139,12 +179,8 @@ class MockURLProtocol: URLProtocol {
     }
     
     override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
-            fatalError("Handler is unavailable.")
-        }
-        
         do {
-            let (response, data) = try handler(request)
+            let (response, data) = try Self.handlerStore.handle(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
             client?.urlProtocolDidFinishLoading(self)
